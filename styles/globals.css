@@ -1,0 +1,1854 @@
+/* General Styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html, body {
+  height: 100%;
+}
+
+h1, h2, h3 {
+  font-family: 'Poppins', sans-serif;
+  color: #3F464B;
+}
+
+h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 2.1rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.35rem;
+  font-weight: 200;
+}
+
+select {
+  height: 2.8rem;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  border: solid #3F464B;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.whiteh3 {
+  color: white;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.scheda {
+  margin: 0 10vw 2.5vw;
+  transition: padding 0.3s ease;
+}
+
+input,
+textarea {
+  font-family: 'Poppins', sans-serif;
+  height: 2.8rem;
+  width: 100%;             /* → usa 100% per occupare lo spazio disponibile */
+  padding: 0.5rem;
+  border: 1px solid #3F464B;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+}
+
+.halfInput {
+  width: 50%;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;           /* spazio orizzontale tra le due colonne */
+  margin-bottom: 1rem; /* spazio sotto la riga */
+}
+
+.form-row > div {
+  flex: 1;             /* fa sì che ogni colonna occupi metà larghezza */
+}
+
+.inputButton {
+  height:60px
+}
+
+.attivita{
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+/* Header Styles */
+.header {
+  height: calc(var(--logo-height) + var(--header-offset)); /* Altezza dinamica */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  position: relative; /* Necessario per posizionare il menuDropdown */
+  background-color: #fff;
+}
+
+.menuSection {
+  position: relative; /* Necessario per il posizionamento assoluto del dropdown */
+}
+
+/* Admin */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.titoloTabella {
+  border: 1.5px solid #9FA2A5;
+  padding: 8px;
+}
+
+.contenutoTabella {
+  border: 1.5px solid #9FA2A5;
+  padding: 8px;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9; /* Colore chiaro */
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #e0e0e0; /* Colore un po' più scuro */
+}
+
+.numberColumn {
+  width: 2rem;
+}
+
+.searchContainer {
+  display: flex;
+  justify-content: flex-end
+}
+
+.addContainer {
+  display: flex;
+  justify-content: flex-end
+}
+
+.overTable {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  margin-bottom: 1rem;
+}
+
+.searchButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  height: 60px;
+  background-color: #3F464B;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between; /* Spazio tra l'icona e il titolo */
+  align-items: center; /* Allinea verticalmente l'icona e il titolo */
+  width: 100%; /* Assicura che occupi tutta la larghezza della modale */
+  margin-bottom: 1rem; /* Spazio sotto l'header */
+}
+
+.modalContent {
+  max-height: 90vh;
+  height: auto;
+  overflow-y: auto;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: fit-content;
+}
+
+
+.loginModal {
+  width: 400px;
+}
+
+.searchInput {
+  width: 800px;
+  height: 3.5rem;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  border: white;
+}
+
+.modalInput {
+  width: 300px;
+  border: solid #3F464B;
+  margin-left: 3rem;
+  margin-bottom: 3rem;
+}
+
+.modalIcon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.modalTitle {
+  font-size: 2.2rem; /* Dimensione del titolo */
+  margin: 0; /* Rimuove margini predefiniti */
+}
+
+.modalImage {
+  height: 10rem;
+}
+
+.imagePreview {
+  height: 20rem;
+}
+.formRow {
+  display: flex;
+  gap: 8rem;
+  align-items: center;
+}
+
+.leftColumn {
+  flex: 1;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-right: 10rem;
+}
+
+.leftColumn .formGroup {
+  display: flex;
+  align-items: center;
+}
+
+.leftColumn .formGroup input,
+.leftColumn .formGroup select {
+  margin-left: auto;
+  text-align: left;
+  gap: 30rem;
+}
+
+.formGroup input {
+  width: 250px;
+}
+
+.resultBox {
+  font-size: 1.2rem;
+  padding: 0.5rem;
+}
+
+.searchResults {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding: 5px;
+}
+
+.searchResultItem {
+  background-color: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: solid 1px #3F464B;
+  transition: background 0.3s;
+}
+
+.searchResultItem:hover {
+  background-color: #f0f0f0;
+}
+
+.searchResultItem:last-child {
+  margin-bottom: 0;
+}
+
+
+
+/* Dropdown Menu */
+.menuDropdown {
+  position: absolute;
+  top: 100%; /* Posiziona sotto il menuIcon */
+  left: 0; /* Allinea a sinistra rispetto al menuIcon */
+  width: 200px;
+  background-color: #fff;
+  border: 1.5px solid #9FA2A5;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Effetto ombra */
+  z-index: 1000;
+}
+
+.menuDropdown ul {
+  list-style: none; /* Rimuove i puntini */
+  margin: 0;
+  padding: 0;
+}
+
+.menuDropdown li {
+  padding: 10px 15px;
+  border-bottom: 1.5px solid #9FA2A5; /* Aggiunge una riga divisoria sotto ogni elemento */
+}
+
+.menuDropdown li:last-child {
+  border-bottom: none; /* Rimuove la riga sotto l'ultimo elemento */
+}
+
+.menuDropdown li a {
+  text-decoration: none; /* Rimuove la sottolineatura */
+  color: #333;
+  display: block; /* Assicura che il link occupi l'intera area cliccabile */
+}
+
+.headerText {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #3F464B;
+  margin-left: 0;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  margin-left: 6vw;
+}
+
+.linkHeader {
+  display: flex;
+  align-items: center;
+}
+
+:root {
+  --logo-height: 115px; /* Altezza del logo */
+  --header-offset: 50px; /* Offset aggiuntivo */
+}
+
+.logo-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  flex: 1; /* Occupa lo spazio rimanente */
+}
+
+.logo {
+  height: var(--logo-height); /* Altezza del logo */
+  width: auto; /* Mantieni le proporzioni */
+}
+
+.iconHeader {
+  width: 25px;
+  margin-bottom: 10px;
+}
+
+/* Header Social Links */
+.headerSocialLinks {
+  display: flex; /* Usa Flexbox per gestire il layout */
+  align-items: center; /* Centra verticalmente le icone */
+  justify-content: flex-end; /* Allinea le icone completamente a destra */
+  gap: 25px; /* Spaziatura tra le icone */
+  margin-left: auto; /* Spinge le icone completamente a destra */
+  padding-right: 6vw; /* Spaziatura a destra rispetto al bordo */
+}
+
+
+.socialLink {
+  display: flex;
+  align-items: center;
+}
+
+.socialIcon {
+  height: 32px;
+  width: auto; /* Mantiene le proporzioni originali */
+  margin-top: 1vw;
+  margin-bottom: 2vw;
+}
+
+.menuIcon {
+  height: 35px;
+  width: auto;
+  cursor: pointer; /* Mostra il cursore come una mano */
+  margin-left: 6vw;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 15px; /* Spaziatura tra le icone */
+  margin-right: -2vw; /* Spinge le icone social a destra */
+  padding-right: 3vw;
+}
+
+.socialLinks .socialLink {
+  display: flex; /* Centra le icone nei loro contenitori */
+  align-items: center;
+  justify-content: center;
+}
+
+.footerSocialLinks {
+  display: flex;
+  justify-content: flex-end; /* Allinea gli elementi orizzontalmente a sinistra */
+  gap: 15px;
+  margin-top: 1rem;
+}
+
+.footerSocialLinks .socialLink {
+  display: flex;
+  padding: 0; /* Rimuove eventuali padding */
+  margin: 0; /* Rimuove eventuali margin */
+}
+
+.footerSocialLinks .socialLink img {
+  height: 30px;
+  width: auto; /* Mantiene le proporzioni originali */
+}
+
+/* Main Content Styles */
+.fullWidthImage {
+  width: 100vw;
+  height: 55vh;
+  object-fit: cover;
+  margin-left: calc(-50vw + 50%);
+}
+
+.slugImage {
+  position: relative;
+  filter: brightness(0.4);
+  z-index: 1;
+}
+
+.slugTitle {
+  position: absolute;
+  bottom: 17.5vw;
+  z-index: 10;
+  color: white;
+  font-size: 3rem;
+  font-weight: 500;
+  word-wrap: break-word;
+  margin-left: 10vw;
+  margin-right: 6vw;
+}
+
+.introduction {
+  line-height: 1.5;
+}
+
+/* Cards Styles */
+.degustazioniList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5%;
+  margin: 0 10vw 2.5vw;
+}
+
+.degustazioneCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1.5px solid #9FA2A5;
+  gap: 1.25%;
+  margin-bottom: 4rem;
+}
+
+.degustazioneBody {
+  padding: 0.5vw 2vw 0 3vw;
+}
+
+.degustazioneTitle {
+  font-size: 2.25rem;
+  margin-bottom: 0.625%;
+}
+
+.degustazioneDetails,
+.degustazioneLocation {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 0.625%;
+}
+
+.degustazioneDescription {
+  font-size: 1rem;
+  margin-bottom: 0.625%;
+}
+
+.degustazioneCollaborazione {
+  font-size: 1rem;
+  font-weight: 200;
+  color: #3F464B;
+}
+
+.degustazioneButtons {
+  display: flex;
+  align-items: center;
+  margin-top: 0.625%;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Button Styles */
+.link {
+  width: 9.375rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #ffffff;
+  border-radius: 1rem;
+  background-color: #3F464B;
+}
+
+.link:hover {
+  background-color: #2C3135;
+}
+
+.customBuyButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  background-color: #3F464B;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 0.03125rem solid #ffffff;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+}
+
+
+.whiteButton {
+  background-color: white;
+  border: 0.15rem solid #3F464B;
+  height: 60px;
+}
+.whiteButtonText {
+  color: #3F464B;
+}
+
+.customBuyButton:hover {
+  background-color: #2C3135;
+}
+
+.whiteButton:hover {
+  background-color: #f0f0f0;
+}
+
+.soldOutButton {
+  background-color: #A9A9A9;
+  cursor: not-allowed;
+}
+
+.selectButton {
+  width: 100px;
+}
+
+.textFakeButton {
+  color: #3F464B;
+  text-decoration: underline ;
+}
+
+.contentWithButtons {
+  display: flex;
+  justify-content: space-between;
+  gap: 2vw;
+  margin: 5vw 10vw 0;
+  align-items: flex-start;
+}
+
+.slugButton {
+  width: 300px;
+  margin-bottom: 1.5px;
+}
+
+.slugDescription {
+  width: 40%;
+  font-weight: 200;
+  font-size: 1.25rem;
+  color: #3F464B;
+  line-height: 1.3;
+  white-space: pre-line;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoContainer {
+  display: flex;
+  padding: 5vw 10vw 0 10vw;
+  gap: 8%;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5%;
+}
+
+.infoLabel {
+  font-weight: bold;
+  font-size: 1.9rem;
+  color: #3F464B;
+  margin-bottom: 0.5%;
+}
+
+.infoValue {
+  font-weight: 300;
+  font-size: 1.25rem;
+  color: #3F464B;
+}
+
+.infoValue a {
+  color: #3F464B;
+  text-decoration: underline;
+}
+
+.infoValue a:hover {
+  color: #2C3135;
+}
+
+.iconDeg {
+  width: 28px;
+  margin-right: 1.2vw;
+  margin-top: 0.5vw;
+}
+
+/* Section Styles */
+.viniSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.vinoImage {
+  width: 500px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: -30px;
+}
+
+.singleSlugTitle {
+  text-align: left;
+  margin: 3vw 0 3vw 10vw;
+  line-height: 3vw;
+}
+
+.singleBuyButton {
+  align-self: center;
+  width: 350px;
+}
+
+.SectionGrey {
+  background-color: #3F464B;
+  width: 100%;
+  margin: 5vw 0 3vw;
+}
+
+.NomeEtichetta {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin-bottom: 2vw;
+  text-align: center;
+}
+
+.white-text {
+  color: white;
+  font-size: 3rem;
+  line-height: 3rem;
+}
+
+.homeTitle {
+  font-size: 3rem;
+  margin: 3vw 0 0 10vw;
+}
+
+.homeSubTitle {
+  font-size: 1.5rem;
+  margin: 0 0 3vw 10vw;
+}
+
+.NomeCantina {
+  font-size: 1rem;
+  font-weight: 200;
+  margin-bottom: 0.5vw;
+  text-align: center;
+}
+
+.bottiglieContainer {
+  display: flex;
+  gap: 20px;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 3vw;
+}
+
+/* Footer Styles */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2vh 10vw;
+  background-color: #3F464B;
+  color: white;
+}
+
+.footerContent {
+  width: 100%;
+}
+
+.footerTopRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 2vh;
+}
+
+.contactBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contactForm {
+  margin-bottom: 2vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contactForm button {
+  font-size: 0.8rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.contactForm label {
+  display: block;
+  margin-bottom: 0.5vh;
+}
+
+.contactForm input {
+  width: 50%;
+  padding: 1.5vh;
+  margin-bottom: 1vh;
+  border: 0.08vw solid #9FA2A5;
+  font-family: 'Poppins', sans-serif;
+}
+
+.contactForm textarea {
+  width: 50%;
+  padding: 1.5vh;
+  margin-bottom: 1vh;
+  border: 0.08vw solid #9FA2A5;
+  font-family: 'Poppins', sans-serif;
+  resize: none; /* opzionale: impedisce il ridimensionamento manuale */
+}
+
+.contactForm button {
+  padding: 1.5vh 2vw;
+  background-color: #3F464B;
+  color: white;
+  border: 0.08vw solid #9FA2A5;
+  cursor: pointer;
+  width: 18%;
+  margin-top: 0.5vw;
+}
+
+.contactForm button:hover {
+  background-color: #2C3135;
+}
+
+.timeBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.timesocial {
+  display: flex; /* Disposizione orizzontale */
+  flex-direction: column; /* Mantiene il timeBox e socialLinks separati in verticale */
+  align-items: flex-end; /* Allinea tutto a destra */
+}
+
+.footerInfo {
+  width: 100%;
+  text-align: center;
+  margin-top: 2vh;
+  font-size: 0.8rem;
+}
+
+.footerInfo p {
+  margin: 0;
+}
+
+.footer a {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer a:hover {
+  color: #dddddd;
+}
+
+/* Media Queries */
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+  .header {
+    height: 130px; /* Altezza dinamica per dispositivi mobili */
+  }
+
+  .logo-container {
+    position: absolute; /* Mantiene il logo centrato */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .logo {
+    height: 95px; /* Riduci l'altezza del logo per dispositivi più piccoli */
+  }
+
+  .socialLinks {
+    justify-content: flex-end; /* Mantieni i social a destra */
+  }
+
+  .socialIcon {
+    height: 30px;
+  }
+  
+  .headerText {
+    font-size: 1.2rem;
+  }
+
+  .iconDeg {
+    width: 20px;
+    margin-left: 3px;
+  }
+
+  .footerContent {
+    font-size: 0.9rem;
+  }
+  .footerTopRow {
+    align-items: center;
+  }
+
+  .timeBox {
+    text-align: right;
+  }
+
+  .contactForm input {
+    width: 70%;
+  }
+
+  .contactForm textarea {
+    width: 70%;
+  }
+
+  .contactForm button {
+    width: 20%;
+  }
+
+  .footerInfo {
+    margin-top: 2vh;
+  }
+
+  .white-text {
+    line-height: 3rem ;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .header {
+    display: flex;
+    align-items: center; /* Centra verticalmente gli elementi */
+    justify-content: space-between; /* Spinge il logo e i social alle posizioni corrette */
+    padding: 0 5vw; /* Margini orizzontali */
+    height: 150px; /* Altezza fissa per l'header */
+  }
+
+.loginmodalIcon {
+  position: absolute;
+  top: 1rem;       /* vicino al bordo superiore */
+  right: 1rem;     /* vicino al bordo destro */
+  width: 1.5rem;   /* circa 24px se 1rem=16px */
+  height: 1.5rem;  
+  cursor: pointer; /* mano al passaggio del mouse */
+  z-index: 10;     /* sopra al contenuto della preview */
+  opacity: 0.8;    
+  transition: opacity 0.2s;
+}
+
+.loginmodalIcon:hover {
+  opacity: 1;      /* si illumina al passaggio del mouse */
+}
+
+.loginmodalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loginmodalHeader {
+  display: flex;
+  justify-content: space-between; /* Spazio tra l'icona e il titolo */
+  align-items: center; /* Allinea verticalmente l'icona e il titolo */
+  width: 100%; /* Assicura che occupi tutta la larghezza della modale */
+  margin-bottom: 1rem; /* Spazio sotto l'header */
+}
+
+.loginmodalContent {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.loginmodalLogo {
+  width: 10rem;
+  height: auto;
+  margin-bottom: 1rem;
+  margin-top: 3rem;
+  align-self: center;
+}
+
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithIcon input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.inputIcon {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 1.7rem;
+  width: 20px;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.loginModal {
+  width: 400px;
+}
+
+.modalInput {
+  width: 300px;
+  border: solid #3F464B;
+  margin-left: 3rem;
+  margin-bottom: 3rem;
+}
+
+.modalTitle {
+  font-size: 2.2rem; /* Dimensione del titolo */
+  margin: 0; /* Rimuove margini predefiniti */
+}
+
+.modalImage {
+  height: 10rem;
+}
+
+.resultsCheck {
+  height: 20px;
+  cursor: 'pointer'
+}
+
+.error-message-box {
+  padding: 1rem; 
+  background-color: #fffbe6;
+  border-color: #ffe58f;
+  border-width: 1px;
+  border-radius: 8px,;
+  margin: 1rem 0;
+  color: #d46b08
+}        
+  .centralTitle {
+    text-align: center;
+    margin-bottom: -1.3rem;
+  }
+
+  .centralTitle + .centralTitle {
+    /* il secondo .centralTitle (cioè l’h3) ottiene il margine */
+    margin-bottom: 2rem;
+  }
+
+  /* classe da applicare ai tuoi select */
+  .noBorderSelect {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    -webkit-appearance: menulist-button;
+    -moz-appearance: menulist-button;
+    appearance: menulist-button;
+    padding: 0 0.5rem;
+    margin-top: 1rem;
+  }
+
+
+  .logo {
+    height: 100px; /* Altezza ottimale per mobile */
+    width: auto; /* Mantieni proporzioni */
+  }
+
+  .logo-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    flex: 1; /* Occupa lo spazio rimanente */
+  }
+
+  .headerSocialLinks {
+    gap: 15px;
+    margin-right: -20px;
+  }
+  
+  .headerText {
+    font-size: 1rem;
+  }
+  
+  .socialIcon {
+    height: 30px;
+  }
+
+  .fullWidthImage {
+    width: 100%;
+    height: 55vh;
+    margin: 0;
+  }
+
+  .slugTitle {
+    bottom: 24.2vh;
+    font-size: 2.5rem;
+    margin-left: 30px;
+  }
+
+  .singleSlugTitle {
+    margin: 5vw 2vw;
+    font-size: 2rem;
+    text-align: center;
+    line-height: normal;
+  }
+
+  .contentWithButtons {
+    flex-direction: column;
+    align-items: center;
+    margin: 5vw 2vw 0;
+    gap: 2rem;
+  }
+
+  .slugDescription {
+    width: 100%;
+    font-size: 1.2rem;
+  }
+
+  .customBuyButton {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .dropZone {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 22rem;
+    border: 0.092rem dashed #3F464B;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    text-align: center;
+    box-sizing: border-box;
+    transition: height .3s ease, box-shadow .3s ease;
+  }
+
+  .dropZone input[type="file"] {
+    position: absolute;
+    top:0; left:0; right:0; bottom:0;
+    width:100%; height:100%;
+    opacity:0;
+    cursor:inherit;
+  }
+
+  .dropZone__placeholder {
+    position: absolute;
+    top:50%; left:50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+    pointer-events: none;
+  }
+  
+  .dropZone__main-text {
+    position: static;      /* o relative senza top/left */
+    margin-top: 2.5rem;    /* lo spazio che desideri */
+    margin-bottom: 0.2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    text-align: left;      /* se vuoi allinearlo a sinistra */
+  }
+
+
+  .dropZone__sub-text {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    font-size: 0.8rem;
+    font-weight: 350;
+    color: #333;
+  }
+
+  .dropZone--shrunken {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: flex-start; 
+    text-align: left;
+    padding: 1.5rem; 
+    height: 10rem; 
+    border: none;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
+    margin-bottom: 3.5rem;
+  }
+
+  .dropZone--shrunken::before,
+  .dropZone--shrunken::after {
+    content: none !important;
+  }
+
+  .scheda--compact h2,
+  .scheda--compact h3,      
+  .scheda--compact .spaceButton {
+    display: none;
+  }
+
+  .dropZone--shrunken .dropZone__main-text,
+  .dropZone--shrunken .dropZone__sub-text,
+  .dropZone--shrunken .dropZone__placeholder {
+    position: static;
+    transform: none; 
+    margin: 0 0 0.5rem;
+    text-align: left;
+  }
+
+  .spaceButton {
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .slugButton {
+    width: 400px;
+    margin-bottom: 1.5px;
+  }
+
+  .dropZone--shrunken .whitelittleButton {
+    background-color: white;
+    color: #3F464B;
+    border: 0.092rem solid #3F464B;
+  }
+  .dropZone--shrunken .littleButton {
+    background-color: #3F464B;
+    color: white;
+    border: none;
+    margin-top: 0.5rem;
+    border-radius: 0.45rem;
+    width: 7.8rem;
+    height: 2.7rem;
+  }
+
+    .dropZone--shrunken .whitelittleButton {
+    background-color: white;
+    color: #3F464B;
+    border: 0.092rem solid #3F464B;
+    margin-top: 0.5rem;
+    border-radius: 0.45rem;
+    width: 7.8rem;
+    height: 2.7rem;
+  }
+
+
+  .doubleButton {
+    display: flex;
+    flex-direction: row;
+    gap: 0.43rem;
+    margin-top: 0.3rem;
+  }
+
+  .dropZone--shrunken .doubleButton button {
+  flex: 1;
+  margin-top: 0.5rem;
+  font-size: 0.80rem;
+  font-weight: 520;
+  text-transform: none;
+  pointer-events: auto;
+  }
+
+  .riquadro2 {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: flex-start;
+    padding: 1.5rem;
+    margin-top: -1.3rem;
+    border: none;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
+    margin-bottom: 0rem;
+    border-radius: 8px;
+  }
+
+  .riquadro2__main-text {
+    margin-top: 0rem;
+    margin-bottom: 0rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .riquadro2__sub-text {
+    font-size: 0.9rem;
+    font-weight: 350;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .loginSubtitle {
+    font-size: 0.8rem;
+    margin-top: -0.6rem;
+    cursor: pointer;
+  }
+
+  .loginSubtitleClick {
+    font-weight: 650;
+  }
+
+  .createNewText {
+    color: #8E7DE5;
+  }
+
+  .underlineInput {
+    border: none;      
+    border-bottom: 1.5px solid #3F464B;
+    outline: none;    
+    background: transparent;
+    padding: 0.5rem 0;
+    font-size: 1rem;              
+  }
+  .underlineInput:focus {
+    border-bottom-color: #0066cc;
+  }
+
+  .region-buttons {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .region-button {
+    flex-basis: auto;
+    white-space: nowrap;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    border: 1px solid #3F464B;
+    border-radius: 8px;
+    background: white;
+    color: #3F464B;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    height: 2.7rem;
+    font-size: 0.90rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    text-align: center;
+  }
+
+  .region-button.selected {
+    background: #3F464B;
+    color: white;
+  }
+
+  .labelTitle {
+    margin-bottom: -0.1rem;
+    margin-top: 1.4rem;
+    font-weight: 500;
+  }
+
+  .noBorderSelect option:first-child {
+    font-weight: bold;
+    color: #3F464B;
+  }
+
+  .noBorderSelect:invalid {
+    color: #3F464B; 
+  }
+
+  .noBorderSelect:valid {
+  color: #3F464B !important;
+}
+
+  .fascia-buttons {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);  /* 5 colonne uguali */
+    gap: 0.4rem;                            /* spazio tra le colonne */
+  }
+
+  .fascia-buttons button {
+    white-space: nowrap; 
+    overflow: hidden;  
+    text-overflow: ellipsis; 
+    display: flex;      
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    height: 2.7rem;
+    font-size: 0.7rem;
+  }
+
+
+  /* Stili per lo stato non selezionato */
+  .fascia-buttons button:not(.selected) {
+    background-color: white;
+    color: #3F464B;
+    border: 1px solid #3F464B;
+  }
+
+  /* Stili per lo stato selezionato */
+  .fascia-buttons button.selected {
+    background-color: #3F464B;
+    color: white;
+    border: none;
+  }
+
+  .submitButton {
+  margin-top: 1rem;
+  border-radius: 0.58rem;
+  width: 100%;  
+  text-transform: none;
+  }
+
+.previewOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);  /* sfondo semi-trasparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+  .previewContent {
+    position: relative;
+    width: 80%;
+    height: 80%;
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+
+  .previewContent .customBuyButton.littleButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .previewContent img,
+  .previewContent embed {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  body.preview-open {
+    overflow: hidden;
+  }
+
+  .logoImage {
+    width: 12rem;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 1rem;
+  }
+
+  .waitingP {
+  color: #3F464B;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 80%;
+  min-height: 4.5rem;
+  margin-bottom: 1.5rem;
+  }
+
+  .iconBar {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  }
+
+  .icon {
+  width: 1.5rem;
+  height: auto;
+  opacity: 0.2;
+  transition: opacity 1s ease-in-out;
+  }
+
+  .icon.active {
+  opacity: 1;
+  }
+
+  @keyframes fadeOnce {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+  }
+
+  .fadeText {
+  animation: fadeOnce 6s ease-in-out forwards;
+  }
+
+  .loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+      z-index: 2000;
+  }
+
+  .topBoxes {
+    display: flex;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+
+  .topBoxes > .menuResults {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: stretch; /* o stretch, se vuoi colmare tutto */
+    border: none;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 50%;
+  }
+
+  .menuResults {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border: none;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .menuResults .dropZone__main-text + .dropZone__sub-text {
+    margin-top: 0.5rem;
+  }
+
+  .menuResults .foot .customBuyButton.littleButton {
+    width: auto !important;
+    height: 2.7rem;
+  }
+  .menuResults .dropZone__main-text,
+  .menuResults .dropZone__sub-text {
+    position: static !important;
+    transform: none !important;
+    margin: 0;
+  }
+
+  /* Spazio tra titolo e sottotitolo */
+  .menuResults .content > * + * {
+    margin-top: 0.5rem;
+  }
+
+  /* Spinge il footer (bottone) sempre in fondo */
+  .menuResults .foot {
+    margin-top: auto;
+  }
+
+  .menuResults .customBuyButton.littleButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem !important;
+    margin-top: 0.7rem;
+    background-color: #3F464B !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 8px;
+    text-transform: none !important;
+    font-weight: 500 !important;
+    width: auto !important;
+    align-self: center !important;
+    
+  }
+
+  .menuResults .dropZone__sub-text {
+    position: static !important;
+    margin: 0 0 1rem;
+    transform: none !important;
+  }
+
+  .menuResults .customBuyButton.littleButton {
+    width: auto !important;
+    align-self: flex-start;
+  }
+
+  .menuResults .content > * {
+    margin: 0;
+  }
+
+  .menuResults .content > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .vinoCard {
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1rem 0 1rem;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
+    background-color: #fff;
+    transition: box-shadow 0.3s;
+    cursor: pointer;
+    margin-top: 1.2rem;
+    font-size: 0.8rem;
+  }
+
+  .vinoCard:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .vinoHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .vinoTitleAndIcon {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-right: 1rem;
+    position: relative;
+  }
+
+  .vinoArrow {
+    width: 0.85rem;
+    height: auto;
+    transition: transform 0.5s ease;
+  }
+
+  .vinoArrow.open {
+    transform: rotate(180deg);
+  }
+
+  .vinoTitleRow {
+    font-weight: 450;
+    color: #3F464B;
+    flex: 1;
+    padding-right: 24px;
+  }
+
+  .vinoMetaRow {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 400;
+    color: #333;
+  }
+
+  .vinoPrice {
+    font-weight: 500;
+  }
+
+  .vinoDetails {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #444;
+    line-height: 1.6;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.6s ease, padding 0.6s ease;
+    padding: 0 0;
+  }
+
+  .vinoDetailsInner {
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .vinoDetails.open .vinoDetailsInner {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .vinoDetails.open {
+    max-height: 1000px;
+    padding: 1rem 0;
+  }
+
+  .vinoDetails ul {
+    margin: 0.5rem 0 0 1rem;
+    padding-left: 1rem;
+  }
+
+  .vinoCategoriaDot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    align-self: center;
+  }
+
+  .vinoScoreWithDot {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .infoContainer {
+    flex-direction: column;
+    margin: 0;
+    gap: 2vw;
+  }
+
+  .infoValue {
+    font-size: 1.2rem;
+  }
+
+  .bottiglieContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .viniSection {
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .vinoImage {
+    width: 100%;
+  }
+
+  .NomeEtichetta {
+    font-size: 1.25rem;
+    margin-bottom: 3.5vw;
+  }
+
+  .white-text {
+    line-height: 2.4rem;
+  }
+
+  .homeTitle {
+    font-size: 2.5rem;
+    margin: 5vw 0 0 2vw;
+  }
+
+  .homeSubTitle {
+    font-size: 1.25rem;
+    margin: 0 0 2vw 2vw;
+  }
+
+  .degustazioniList {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 20px;
+  }
+
+  .degustazioneTitle {
+    font-size: 1.75rem;
+  }
+
+  .degustazioneCard {
+    margin-bottom: 10vw;
+  }
+
+  .footer {
+    display: flex;
+    flex-direction: column; /* Disposizione verticale */
+    align-items: center; /* Centra tutto orizzontalmente */
+    justify-content: center; /* Centra tutto verticalmente */
+    text-align: center; /* Centra il testo */
+    padding: 2rem 1rem; /* Spaziatura interna */
+  }
+  
+  .footerTopRow {
+    flex-direction: column; /* Disposizione verticale */
+    align-items: center; /* Centra gli elementi */
+    gap: 2rem; /* Spaziatura uniforme tra i blocchi */
+    width: 100%; /* Occupa tutta la larghezza */
+    text-align: center; /* Allinea il testo al centro */
+  }
+
+  .contactBox,
+  .timeBox {
+    display: flex;
+    flex-direction: column; /* Layout verticale */
+    align-items: center; /* Centra orizzontalmente */
+    text-align: center; /* Centra il testo */
+    margin-bottom: 1vw; /* Spaziatura tra i blocchi */
+  }
+
+  .contactBox,
+  .timeBox,
+  .footerInfo {
+    width: 100%;
+    padding: 0 0 0 0;
+    text-align: center;
+  }
+
+  .footerInfo {
+    width: 100%; /* Occupa tutta la larghezza */
+    text-align: center; /* Centra il testo */
+    margin-top: 2rem; /* Aggiungi un margine superiore */
+  }
+
+  .timeBox {
+    width: 100%; /* Occupa tutta la larghezza */
+    margin: 0; /* Rimuovi il margine */
+    padding: 0 0; /* Aggiungi un padding orizzontale */
+    align-items: center; /* Centra il contenuto */
+    text-align: center; /* Allinea il testo al centro */
+  }
+
+  .contactBox {
+    display: flex;
+    flex-direction: column; /* Layout verticale */
+    align-items: center; /* Centra gli elementi */
+    justify-content: center; /* Centra verticalmente */
+    width: 100%; /* Occupare tutta la larghezza disponibile */
+    max-width: 400px; /* Limita la larghezza massima */
+  }
+
+  .contactForm {
+    width: 100%; /* Rendi il form adattivo */
+    max-width: 400px; /* Limita la larghezza */
+  }
+
+  .contactForm input {
+    width: 60%; /* Allinea gli input alla larghezza del contenitore */
+    margin-bottom: 1rem; 
+    align-items: center;
+  }
+
+  .contactForm textarea {
+    width: 60%; /* Allinea gli input alla larghezza del contenitore */
+    margin-bottom: 1rem; 
+    align-items: center;
+  }
+
+  .contactForm input,
+  .contactForm button,
+  .contactForm textarea {
+  width: 80%; /* Larghezza adattabile per schermi più piccoli */
+  max-width: 300px; /* Limita la larghezza massima */
+  padding: 10px; /* Spaziatura interna */
+  margin-left: 10%;
+  align-items: center;
+  } 
+
+  .contactForm label,
+  .contactForm input
+  .contactForm textarea {
+    text-align: center;
+  }
+
+  .contactForm button {
+    width: 50%;
+    margin-top: 1vh;
+    margin-left: 25%;
+  }
+  
+  .socialLinks {
+    justify-content: center; /* Centra le icone social */
+    width: 100%; /* Occupa tutta la larghezza */
+    margin: 1rem 0; /* Aggiungi un margine superiore e inferiore */
+    gap: 1rem; /* Spaziatura tra le icone */
+    padding-right: 0
+  }
+}
