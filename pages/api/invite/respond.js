@@ -1,4 +1,4 @@
-import { withAuth } from '../auth/withAuth';
+import { withAuth } from '../../../lib/auth/withAuth';
 import { connectToDatabase } from '../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
