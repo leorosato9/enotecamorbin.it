@@ -1,6 +1,5 @@
 import { withAuth } from '../../lib/auth/withAuth';
 import { connectToDatabase } from '../../lib/mongodb';
-
 import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter';
 
 async function attivitaHandler(req, res, session) {
@@ -9,18 +8,19 @@ async function attivitaHandler(req, res, session) {
     return res.status(405).json({ message: 'Metodo non consentito' });
   }
 
-  const { nome, regione, provincia, comune } = req.body;
-  if (!nome || !regione || !provincia || !comune) {
-    return res.status(400).json({ message: 'Tutti i campi sono obbligatori' });
-  }
+  const { nome, regione, provincia, comune, fascia } = req.body;
 
   try {
     const { db } = await connectToDatabase();
     const userPlan = session.user.plan || 'free';
     const userId = session.user.id;
 
+    console.log(`[API /api/attivita] Controllo limiti per l'utente ${userId} con piano ${userPlan}`);
+    
     await checkRestaurantLimit(db, userId, userPlan);
     
+    console.log(`[API /api/attivita] Controllo limite superato. Procedo con la creazione.`);
+
     const nuovaAttivita = {
       userEmail: session.user.email.toLowerCase(),
       userId: userId,
@@ -28,18 +28,19 @@ async function attivitaHandler(req, res, session) {
       regione,
       provincia,
       comune,
+      fascia,
       createdAt: new Date(),
     };
     const result = await db.collection('attività').insertOne(nuovaAttivita);
-    return res.status(201).json({ message: 'Attività salvata', id: result.insertedId });
+    return res.status(201).json({ success: true, message: 'Attività salvata', id: result.insertedId });
     
   } catch (err) {
     if (err.statusCode === 403) {
-      console.log('Limite raggiunto in /api/attivita, invio risposta "soft error" al client.');
+      console.log('[API /api/attivita] Limite raggiunto, invio risposta "soft error" al client.');
       return res.status(200).json({ success: false, message: err.message });
     }
     
-    console.error('Errore in /api/attivita:', err.message);
+    console.error('[API /api/attivita] Errore imprevisto:', err);
     return res.status(err.statusCode || 500).json({ success: false, message: err.message || 'Errore interno del server' });
   }
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 
-export function useSubmission({ filePdf, nome, regione, provincia, comune, fascia, setError, setLoading }) {
+export function useSubmission({ filePdf, nome, regione, provincia, comune, fascia, setError, setLoading, activityId }) {
   const router = useRouter();
   const { status } = useSession();
   const [showModal, setShowModal] = useState(false);
@@ -17,6 +17,9 @@ export function useSubmission({ filePdf, nome, regione, provincia, comune, fasci
     formData.append('provincia', provincia);
     formData.append('comune', comune);
     formData.append('fascia', fascia);
+    if (activityId) {
+      formData.append('activityId', activityId);
+    }
     try {
       const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
       if (!res.ok) throw new Error((await res.json()).error || 'Errore sconosciuto');

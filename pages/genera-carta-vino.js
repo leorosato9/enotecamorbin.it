@@ -40,9 +40,12 @@ export default function GeneraCartaVino() {
     setModalState,
     handleLoginSuccess,
     limitError,
+    selectedActivityId, 
   } = useGeneraCartaVino();
 
   if (loading) return <LoadingScreen />;
+
+  const isButtonDisabled = loading || (!!limitError && !selectedActivityId);
 
   return (
     <div>
@@ -99,7 +102,7 @@ export default function GeneraCartaVino() {
               />
               <button
                 type="submit"
-                disabled={loading || !!limitError}
+                disabled={isButtonDisabled}
                 className="customBuyButton submitButton"
               >
                 Genera la tua Carta Vini

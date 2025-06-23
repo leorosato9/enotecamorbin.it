@@ -8,7 +8,7 @@ export function useUserPage({ initialActivities, currentUserEmail }) {
   const [isSubmittingActivity, setIsSubmittingActivity] = useState(false);
   const [activitySubmitError, setActivitySubmitError] = useState(null);
 
-  const handleAddActivity = async ({ nome, regione, provincia, comune }) => {
+  const handleAddActivity = async ({ nome, regione, provincia, comune, fascia }) => {
     setActivitySubmitError(null);
     if (!nome || !regione || !provincia || !comune) {
       setActivitySubmitError('Compila tutti i campi.');
@@ -21,7 +21,7 @@ export function useUserPage({ initialActivities, currentUserEmail }) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, regione, provincia, comune }),
+        body: JSON.stringify({ nome, regione, provincia, comune, fascia }),
       });
       const data = await response.json();
       
@@ -36,6 +36,7 @@ export function useUserPage({ initialActivities, currentUserEmail }) {
         regione, 
         provincia, 
         comune, 
+        fascia,
         createdAt: new Date().toISOString(), 
         collaboratori: [],
         userEmail: currentUserEmail 

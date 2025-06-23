@@ -2,6 +2,10 @@ import Link from 'next/link';
 import React, { memo } from 'react';
 
 function CartaItem({ carta }) {
+  if (!carta) {
+    return null;
+  }
+  
   const dataFormattata = new Date(carta.createdAt).toLocaleDateString('it-IT', {
     day: '2-digit',
     month: 'long',
