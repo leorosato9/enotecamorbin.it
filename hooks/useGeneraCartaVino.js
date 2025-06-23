@@ -1,28 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-
 import { useFormState } from './genera-carta-vino/useFormState';
 import { useLocationLogic } from './genera-carta-vino/useLocationLogic';
 import { useSubmission } from './genera-carta-vino/useSubmission';
-
-// 1. Importiamo la nostra configurazione dei piani
 import { PLAN_CONFIG } from '../lib/config/plans';
 
-
 export default function useGeneraCartaVino() {
-  // Aggiungiamo 'session' per accedere ai dati dell'utente, come il suo piano
   const { data: session, status, update } = useSession();
   const formState = useFormState();
   const locationState = useLocationLogic();
-
   const [modalState, setModalState] = useState({ isOpen: false, initialView: 'register' });
-  
   const [userActivities, setUserActivities] = useState([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState(null);
+  const [restaurantLimitError, setRestaurantLimitError] = useState(null);
+  const [weeklyLimitError, setWeeklyLimitError] = useState(null);
 
-  // 2. Aggiungiamo lo stato per il messaggio di errore del limite
-  const [limitError, setLimitError] = useState(null);
-
+  // Questo useEffect carica le attività dell'utente in background, senza fare controlli
   useEffect(() => {
     if (status === 'authenticated') {
       setIsLoadingActivities(true);
@@ -36,47 +30,54 @@ export default function useGeneraCartaVino() {
     }
   }, [status]);
   
-  // --- NUOVO useEffect PER CONTROLLARE I LIMITI ---
+  // MODIFICA CHIAVE: Questi controlli ora dipendono da `showDetails`
   useEffect(() => {
-    // Eseguiamo il controllo solo se l'utente è autenticato e abbiamo finito di caricare le sue attività
-    if (status === 'authenticated' && !isLoadingActivities) {
+    // I controlli sui limiti vengono eseguiti solo se l'utente è autenticato E se è nel secondo step del form.
+    if (status === 'authenticated' && formState.showDetails) {
+      
+      // 1. Controllo limite settimanale
+      fetch('/api/user/carta-allowance')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.canCreateMenu) {
+                setWeeklyLimitError(data.message);
+            } else {
+                setWeeklyLimitError(null);
+            }
+        });
+
+      // 2. Controllo limite attività
       const userPlan = session?.user?.plan || 'free';
       const restaurantLimit = PLAN_CONFIG[userPlan]?.limits.restaurants;
-
-      // Se l'utente è su un piano con un limite numerico e lo ha raggiunto...
       if (typeof restaurantLimit === 'number' && userActivities.length >= restaurantLimit) {
-        // ...impostiamo il messaggio di errore.
-        setLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il piano ${PLAN_CONFIG[userPlan].name}. Fai l'upgrade a Plus!`);
+        setRestaurantLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il tuo piano. Fai l'upgrade a Plus!`);
       } else {
-        // Altrimenti, ci assicuriamo che non ci sia nessun messaggio di errore.
-        setLimitError(null);
+        setRestaurantLimitError(null);
       }
+    } else {
+        // Resetta gli errori se l'utente torna indietro
+        setWeeklyLimitError(null);
+        setRestaurantLimitError(null);
     }
-  }, [status, userActivities, isLoadingActivities, session]); // Questo effetto si attiva quando i dati cambiano
-
-
-  const { setNome, setFascia } = formState;
-  const { setRegione, setProvincia, setComune } = locationState;
+  }, [status, formState.showDetails, userActivities, session]);
 
   const onActivitySelect = useCallback((activity) => {
     if (activity) {
-      setNome(activity.nome);
-      setRegione(activity.regione);
-      setFascia(activity.fascia || '');
+      setSelectedActivityId(activity._id);
+      formState.setNome(activity.nome);
+      locationState.setRegione(activity.regione);
+      formState.setFascia(activity.fascia || '');
       setTimeout(() => {
-        setProvincia(activity.provincia);
-        setTimeout(() => setComune(activity.comune), 0);
+        locationState.setProvincia(activity.provincia);
+        setTimeout(() => locationState.setComune(activity.comune), 0);
       }, 0);
     } else {
-      setNome('');
-      setRegione('');
-      setFascia('');
+      setSelectedActivityId(null);
+      formState.setNome('');
+      locationState.setRegione('');
+      formState.setFascia('');
     }
-  }, [setNome, setRegione, setFascia, setProvincia, setComune]);
-
-  const handleLoginSuccess = () => {
-    update();
-  };
+  }, [formState.setNome, locationState.setRegione, formState.setFascia, locationState.setProvincia, locationState.setComune]);
 
   const submissionDependencies = {
     filePdf: formState.filePdf,
@@ -87,7 +88,7 @@ export default function useGeneraCartaVino() {
     fascia: formState.fascia,
     setError: formState.setError,
     setLoading: formState.setLoading,
-    // Dovrai passare l'activityId selezionato anche qui
+    activityId: selectedActivityId,
   };
   
   const submissionState = useSubmission(submissionDependencies);
@@ -102,8 +103,9 @@ export default function useGeneraCartaVino() {
     isLoadingActivities,
     modalState,
     setModalState,
-    handleLoginSuccess,
-    // 3. Esportiamo il nuovo stato di errore così la pagina può passarlo al form
-    limitError, 
+    handleLoginSuccess: update,
+    restaurantLimitError,
+    weeklyLimitError,
+    selectedActivityId, 
   };
 }

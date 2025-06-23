@@ -24,6 +24,8 @@ export default function Risultati() {
     fileType,
     showPreview,
     openStates,
+    regenerationCount,
+    regenerationLimit,
     toggleCard,
     handleViewMenu,
     setShowPreview,
@@ -44,6 +46,9 @@ export default function Risultati() {
       </main>
     );
   }
+
+  const regenerationsRemaining = regenerationLimit - regenerationCount;
+  const hasRegenerations = regenerationsRemaining > 0;
 
   return (
     <>
@@ -76,17 +81,29 @@ export default function Risultati() {
         )}
 
         {risultati.length > 0 && (
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <div>
+           <p className={`regeneration-counter ${!hasRegenerations ? 'unavailable' : ''}`}>
+              {hasRegenerations ? (
+                <>
+                  Hai a disposizione ancora <span className="regeneration-counter__number">{regenerationsRemaining}</span> rigenerazion{regenerationsRemaining > 1 ? 'i' : 'e'}.
+                </>
+              ) : (
+                'Hai usato tutte le rigenerazioni per questa carta.'
+              )}
+            </p>
+
             <button
               onClick={handleRegenerate} 
               className="customBuyButton submitButton"
-              disabled={isRegenerating || selectedWines.length === risultati.length}
+              disabled={isRegenerating || selectedWines.length === risultati.length || !hasRegenerations}
             >
               {isRegenerating 
                 ? 'Rigenerazione in corso...' 
-                : selectedWines.length > 0 
-                  ? `Rigenera la Carta (${selectedWines.length} preferiti)`
-                  : 'Rigenera l\'intera Carta Vini'
+                : !hasRegenerations
+                  ? 'Rigenerazioni esaurite'
+                  : selectedWines.length > 0 
+                    ? `Rigenera la Carta (${selectedWines.length} preferiti)`
+                    : 'Rigenera l\'intera Carta Vini'
               }
             </button>
           </div>

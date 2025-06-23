@@ -1,6 +1,8 @@
 import { withAuth } from '../../lib/auth/withAuth';
-// Assicurati di importare entrambi i servizi di ricerca
-import { findCategorizedReplacements, processPinecone } from '../../lib/services/carta/wineSelection.js';
+
+import { connectToDatabase } from '../../lib/mongodb';
+
+import { findCategorizedReplacements } from '../../lib/services/carta/wineSelection.js';
 import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI.js';
 import { updateCartaInMongo } from '../../lib/services/carta/mongoUpload.js';
 
@@ -12,53 +14,65 @@ async function rigeneraCartaHandler(req, res) {
 
   try {
     const { cartaId, risultati, selectedWines, menuEmbedding, menuText, ristorante, spiegazioni } = req.body;
-    let newWines = [];
 
+    const { db } = await connectToDatabase();
+    const carta = await db.collection('cartavini').findOne({ _id: cartaId });
+
+    if (!carta) {
+        return res.status(404).json({ success: false, message: 'Carta non trovata.' });
+    }
+
+    if (carta.regenerationCount >= carta.regenerationLimit) {
+        const message = `Hai raggiunto il limite di ${carta.regenerationLimit} rigenerazioni per questa carta.`;
+        console.log(`[rigenera-carta] Limite raggiunto per ${cartaId}: ${message}`);
+        return res.status(403).json({ success: false, message: message });
+    }
+    
     if (!menuEmbedding || menuEmbedding.length === 0) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Dati del menù (embedding) non trovati. Impossibile rigenerare. Prova a creare una nuova carta.' 
+        message: 'Dati del menù (embedding) non trovati. Impossibile rigenerare.' 
+      });
+    }
+
+    const winesToKeep = risultati.filter(v => selectedWines.includes(v.id));
+    const winesToDiscard = risultati.filter(v => !selectedWines.includes(v.id));
+    const replacementsNeeded = winesToDiscard.length;
+
+    if (replacementsNeeded === 0) {
+      return res.status(200).json({
+        success: true,
+        risultati: risultati,
+        spiegazioni: spiegazioni,
+        message: 'Nessun vino da rigenerare.'
       });
     }
     
-    if (selectedWines && selectedWines.length > 0) {
-      console.log("Eseguo rigenerazione con preferenze...");
-      const keptWines = risultati.filter(v => selectedWines.includes(v.id));
-      const selectedVectors = keptWines.map(v => v.values);
+    console.log(`Rigenerazione richiesta. Vini da tenere: ${winesToKeep.length}, Vini da sostituire: ${winesToDiscard.length}`);
 
-      const { topSelections } = await findCategorizedReplacements({
-        menuEmbedding,
-        selectedVectors,
-        allCurrentWines: risultati,
-        keptWineIds: selectedWines
-      });
-      newWines = topSelections;
-
-    } else {
-      console.log("Eseguo rigenerazione completa senza preferenze...");
-      const excludedIds = risultati.map(vino => vino.id);
-      const { topSelections } = await processPinecone({
-        menuEmbedding,
-        selectK: risultati.length,
-        excludedIds: excludedIds
-      });
-      newWines = topSelections;
-    }
-
+    const { topSelections: newWines } = await findCategorizedReplacements({
+      menuEmbedding,
+      selectedVectors: winesToKeep.map(v => v.values),
+      winesToDiscard,
+      allCurrentWines: risultati,
+      replacementsNeeded
+    });
+    
     if (newWines.length === 0) {
-      return res.status(404).json({ success: false, message: 'Non sono stati trovati vini sostitutivi adeguati.' });
+        return res.status(404).json({ success: false, message: 'Non sono stati trovati vini sostitutivi adeguati.' });
     }
 
     const elencoBottiglie = newWines.map(vino => {
       const nomeVino = vino.metadata.nomeVino || vino.metadata.nome_completo || 'Nome non disponibile';
       return `- ${vino.metadata.produttore || ''} – ${vino.metadata.denominazione || nomeVino} ${vino.metadata.annata || ''}`;
     }).join('\n');
+
     const spiegazioniJson = await generateWineExplanations({ ...ristorante, menuText, elencoBottiglie });
     const newExplanations = JSON.parse(spiegazioniJson);
     
-    const keptWines = risultati.filter(v => selectedWines.includes(v.id));
     const keptExplanations = spiegazioni.filter((_, index) => selectedWines.includes(risultati[index].id));
-    const finalRisultati = [...keptWines, ...newWines];
+    
+    const finalRisultati = [...winesToKeep, ...newWines];
     const finalSpiegazioni = [...keptExplanations, ...newExplanations];
 
     await updateCartaInMongo({

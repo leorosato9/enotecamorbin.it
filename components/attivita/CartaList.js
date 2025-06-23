@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import Link from 'next/link';
 import CartaItem from './CartaItem';
 
 function CartaList({ carte }) {
@@ -14,6 +15,14 @@ function CartaList({ carte }) {
       ) : (
         <p>Nessuna carta dei vini è stata ancora generata per questa attività.</p>
       )}
+
+      <div className="carta-vini-item new-carta-button" style={{ marginTop: '1rem' }}>
+        <Link href="/genera-carta-vino" legacyBehavior>
+          <a>
+            <strong>+ Genera nuova carta vino</strong>
+          </a>
+        </Link>
+      </div>
     </div>
   );
 }

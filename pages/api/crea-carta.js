@@ -16,6 +16,12 @@ import { supabaseUpload } from '../../lib/services/carta/supabaseUpload.js';
 import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload.js';
 import { saveAttivita } from '../../lib/services/attivita/saveAttivita.js';
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 async function creaCartaHandler(req, res, session) {
   try {
     const userPlan = session.user.plan || 'free';
