@@ -1,5 +1,3 @@
-// File: pages/genera-carta-vino.js
-
 import Head from 'next/head';
 import React from 'react';
 import Header from '../components/layout/Header';
@@ -12,39 +10,45 @@ import useGeneraCartaVino from '../hooks/useGeneraCartaVino';
 
 export default function GeneraCartaVino() {
   const {
-    nome, setNome,
-    fascia, setFascia,
-    filePdf,
-    loading,
-    error,
+    nome,
+    setNome, 
+    fascia, 
+    setFascia, 
+    filePdf, 
+    loading, 
+    error, 
     showDetails,
-    showPreview,
-    fileURL,
-    setShowDetails,
-    handleFileChange,
+    showPreview, 
+    setShowPreview,
+    fileURL, 
+    setShowDetails, 
+    handleFileChange, 
     handleViewMenu,
-    handleChangeMenu,
-    handleFormSubmit,
-    regione, setRegione,
-    provincia, setProvincia, provinceList,
-    comune, setComune, comuniList,
-    authStatus,
+    handleChangeMenu, 
+    handleFormSubmit, 
+    regione, 
+    setRegione, 
+    provincia, 
+    setProvincia,
+    provinceList, 
+    comune, 
+    setComune, 
+    comuniList, 
+    authStatus, 
     userActivities,
-    isLoadingActivities,
-    onActivitySelect,
-    modalState,
+    isLoadingActivities, 
+    onActivitySelect, 
+    modalState, 
     setModalState,
-    handleLoginSuccess,
-    restaurantLimitError,
+    handleLoginSuccess, 
+    restaurantLimitError, 
     weeklyLimitError,
-    selectedActivityId,
   } = useGeneraCartaVino();
 
   if (loading) return <LoadingScreen />;
   
-  const activeLimitError = weeklyLimitError || (restaurantLimitError && !selectedActivityId ? restaurantLimitError : null);
-
-  const isButtonDisabled = loading || !!activeLimitError;
+  const isCreatingNew = !userActivities.some(act => act.nome === nome);
+  const isActionBlocked = !!weeklyLimitError || (isCreatingNew && !!restaurantLimitError);
 
   return (
     <div>
@@ -58,6 +62,7 @@ export default function GeneraCartaVino() {
         <h3 className="centralTitle">Carica o scatta una foto al tuo menù</h3>
 
         <form onSubmit={handleFormSubmit}>
+          
           <FileUpload
             file={filePdf}
             onFileChange={handleFileChange}
@@ -66,12 +71,16 @@ export default function GeneraCartaVino() {
             onChangeMenu={handleChangeMenu}
             loading={loading}
           />
-
+          
           {!showDetails && (
             <button
               type="button"
-              onClick={() => setShowDetails(true)}
-              disabled={!filePdf}
+              onClick={() => {
+                if (!filePdf) {
+                  return;
+                }
+                setShowDetails(true)
+              }}
               className="customBuyButton spaceButton"
             >
               Continua
@@ -88,29 +97,27 @@ export default function GeneraCartaVino() {
                 fascia={fascia} setFascia={setFascia}
                 provinceList={provinceList}
                 comuniList={comuniList}
-                loading={loading}
-                authStatus={authStatus}
                 userActivities={userActivities}
-                isLoadingActivities={isLoadingActivities}
                 onActivitySelect={onActivitySelect}
-                limitError={activeLimitError}
-                modalState={modalState}
-                onCloseModal={() => setModalState({ isOpen: false, initialView: 'register' })}
-                onOpenLoginModal={() => setModalState({ isOpen: true, initialView: 'login' })}
-                onLoginSuccess={handleLoginSuccess}
+                loading={loading}
+                restaurantLimitError={restaurantLimitError}
+                weeklyLimitError={weeklyLimitError}
               />
-              <button
-                type="submit"
-                disabled={isButtonDisabled}
-                className="customBuyButton submitButton"
-              >
-                Genera la tua Carta Vini
-              </button>
+              
+              {!isActionBlocked && (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="customBuyButton submitButton"
+                >
+                  Genera la tua Carta Vini
+                </button>
+              )}
             </>
           )}
         </form>
 
-        {error && !activeLimitError && <p className="error">{error}</p>}
+        {error && !isActionBlocked && <p className="error">{error}</p>}
       </div>
 
       <PreviewOverlay

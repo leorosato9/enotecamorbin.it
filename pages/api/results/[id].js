@@ -1,15 +1,10 @@
-// pages/api/results/[id].js
-
 import { connectToDatabase } from '../../../lib/mongodb';
-import { ObjectId } from 'mongodb'; // Import necessario per la validazione
 
 export default async function handler(req, res) {
-  // 1. Log iniziale: vediamo se il file viene almeno raggiunto
   console.log('--- [API /api/results/[id]] Richiesta ricevuta ---');
 
   try {
     const { id } = req.query;
-    // 2. Log dell'ID: vediamo quale ID stiamo ricevendo dalla URL
     console.log(`[API] ID ricevuto dalla URL: "${id}"`);
 
     if (req.method !== 'GET') {
@@ -18,17 +13,12 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Metodo non consentito' });
     }
 
-    // 3. Aggiungiamo un controllo robusto sull'ID
     if (!id || typeof id !== 'string' || id === 'undefined') {
       console.log(`[API] Errore: l'ID è non valido o mancante.`);
       return res.status(400).json({ error: 'ID non valido o mancante' });
     }
 
-    console.log('[API] Connessione al database...');
     const { db } = await connectToDatabase();
-    console.log('[API] Connesso. Eseguo la query sulla collezione "cartavini"...');
-
-    // La query usa direttamente l'ID come stringa, come è salvato nel DB
     const record = await db.collection('cartavini').findOne({ _id: id });
 
     if (!record) {
@@ -48,14 +38,15 @@ export default async function handler(req, res) {
       comune: record.comune,
       provincia: record.provincia,
       risultati: risultatiConCategoria,
-      spiegazioni: record.spiegazioni || '[]', // Assicuriamoci sia una stringa JSON valida
+      spiegazioni: record.spiegazioni || '[]',
       fileUrl: record.fileUrl || null,
       menuText: record.menuText,
-      menuEmbedding: record.menuEmbedding
+      menuEmbedding: record.menuEmbedding,
+      regenerationCount: record.regenerationCount || 0,
+      regenerationLimit: record.regenerationLimit || 3,
     });
 
   } catch (e) {
-    // 4. Questo cattura qualsiasi errore inaspettato
     console.error('[API] ERRORE CRITICO nel blocco try/catch:', e);
     return res.status(500).json({ error: 'Errore interno del server.', details: e.message });
   }

@@ -16,17 +16,9 @@ export default function useGeneraCartaVino() {
   const [restaurantLimitError, setRestaurantLimitError] = useState(null);
   const [weeklyLimitError, setWeeklyLimitError] = useState(null);
 
+  // Questo useEffect carica le attività dell'utente in background, senza fare controlli
   useEffect(() => {
     if (status === 'authenticated') {
-      fetch('/api/user/carta-allowance')
-        .then(res => res.json())
-        .then(data => {
-            if (!data.canCreateMenu) {
-                setWeeklyLimitError(data.message);
-            }
-        })
-        .catch(err => console.error("Failed to fetch carta allowance status", err));
-      
       setIsLoadingActivities(true);
       fetch('/api/user/activities')
         .then(res => res.json())
@@ -38,40 +30,54 @@ export default function useGeneraCartaVino() {
     }
   }, [status]);
   
+  // MODIFICA CHIAVE: Questi controlli ora dipendono da `showDetails`
   useEffect(() => {
-    if (status === 'authenticated' && !isLoadingActivities) {
+    // I controlli sui limiti vengono eseguiti solo se l'utente è autenticato E se è nel secondo step del form.
+    if (status === 'authenticated' && formState.showDetails) {
+      
+      // 1. Controllo limite settimanale
+      fetch('/api/user/carta-allowance')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.canCreateMenu) {
+                setWeeklyLimitError(data.message);
+            } else {
+                setWeeklyLimitError(null);
+            }
+        });
+
+      // 2. Controllo limite attività
       const userPlan = session?.user?.plan || 'free';
       const restaurantLimit = PLAN_CONFIG[userPlan]?.limits.restaurants;
       if (typeof restaurantLimit === 'number' && userActivities.length >= restaurantLimit) {
-        setRestaurantLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il piano ${PLAN_CONFIG[userPlan].name}. Fai l'upgrade a Plus!`);
+        setRestaurantLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il tuo piano. Fai l'upgrade a Plus!`);
       } else {
         setRestaurantLimitError(null);
       }
+    } else {
+        // Resetta gli errori se l'utente torna indietro
+        setWeeklyLimitError(null);
+        setRestaurantLimitError(null);
     }
-  }, [status, userActivities, isLoadingActivities, session]);
-
-  const { setNome, setFascia } = formState;
-  const { setRegione, setProvincia, setComune } = locationState;
+  }, [status, formState.showDetails, userActivities, session]);
 
   const onActivitySelect = useCallback((activity) => {
     if (activity) {
       setSelectedActivityId(activity._id);
-      setNome(activity.nome);
-      setRegione(activity.regione);
-      setFascia(activity.fascia || '');
+      formState.setNome(activity.nome);
+      locationState.setRegione(activity.regione);
+      formState.setFascia(activity.fascia || '');
       setTimeout(() => {
-        setProvincia(activity.provincia);
-        setTimeout(() => setComune(activity.comune), 0);
+        locationState.setProvincia(activity.provincia);
+        setTimeout(() => locationState.setComune(activity.comune), 0);
       }, 0);
     } else {
       setSelectedActivityId(null);
-      setNome('');
-      setRegione('');
-      setFascia('');
+      formState.setNome('');
+      locationState.setRegione('');
+      formState.setFascia('');
     }
-  }, [setNome, setRegione, setFascia, setProvincia, setComune]);
-
-  const handleLoginSuccess = () => update();
+  }, [formState.setNome, locationState.setRegione, formState.setFascia, locationState.setProvincia, locationState.setComune]);
 
   const submissionDependencies = {
     filePdf: formState.filePdf,
@@ -97,7 +103,7 @@ export default function useGeneraCartaVino() {
     isLoadingActivities,
     modalState,
     setModalState,
-    handleLoginSuccess,
+    handleLoginSuccess: update,
     restaurantLimitError,
     weeklyLimitError,
     selectedActivityId, 

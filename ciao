@@ -15,8 +15,8 @@ export default function RestaurantForm({
   userActivities,
   onActivitySelect,
   loading,
-  weeklyLimitError,
-  restaurantLimitError,
+  limitError,
+  selectionOnly = false,
 }) {
   const { status } = useSession();
   const router = useRouter();
@@ -38,19 +38,6 @@ export default function RestaurantForm({
   const isCreatingNew = !userActivities.some(act => act.nome === nome);
   const fieldsDisabled = loading || !isCreatingNew;
 
-  let errorToShow = null;
-  if (isCreatingNew) {
-    if (restaurantLimitError) {
-      errorToShow = restaurantLimitError;
-    } else if (weeklyLimitError) {
-      errorToShow = weeklyLimitError;
-    }
-  } else {
-    errorToShow = weeklyLimitError;
-  }
-
-  const showInputFields = !errorToShow;
-
   return (
     <div className="riquadro2">
       <p className="riquadro2__main-text">Ristorante</p>
@@ -71,13 +58,13 @@ export default function RestaurantForm({
         </div>
       )}
       
-      {errorToShow && (
+      {limitError && (
         <div className="error-message-box">
-          <p>{errorToShow}</p>
+          <p>{limitError}</p>
         </div>
       )}
 
-      {showInputFields && (
+      {!selectionOnly && (
         <div className="new-activity-fields">
           
           {(status === 'authenticated' && userActivities.length > 0) && <hr style={{ margin: '2rem 0' }} />}
