@@ -1,15 +1,13 @@
+// File: pages/genera-carta-vino.js
+
 import Head from 'next/head';
 import React from 'react';
-
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-
 import LoadingScreen from '../components/ui/LoadingScreen';
 import PreviewOverlay from '../components/ui/PreviewOverlay';
-
 import FileUpload from '../components/genera-carta-vino/FileUpload';
 import RestaurantForm from '../components/genera-carta-vino/RestaurantForm';
-
 import useGeneraCartaVino from '../hooks/useGeneraCartaVino';
 
 export default function GeneraCartaVino() {
@@ -27,11 +25,9 @@ export default function GeneraCartaVino() {
     handleViewMenu,
     handleChangeMenu,
     handleFormSubmit,
-
     regione, setRegione,
     provincia, setProvincia, provinceList,
     comune, setComune, comuniList,
-
     authStatus,
     userActivities,
     isLoadingActivities,
@@ -39,13 +35,16 @@ export default function GeneraCartaVino() {
     modalState,
     setModalState,
     handleLoginSuccess,
-    limitError,
-    selectedActivityId, 
+    restaurantLimitError,
+    weeklyLimitError,
+    selectedActivityId,
   } = useGeneraCartaVino();
 
   if (loading) return <LoadingScreen />;
+  
+  const activeLimitError = weeklyLimitError || (restaurantLimitError && !selectedActivityId ? restaurantLimitError : null);
 
-  const isButtonDisabled = loading || (!!limitError && !selectedActivityId);
+  const isButtonDisabled = loading || !!activeLimitError;
 
   return (
     <div>
@@ -94,7 +93,7 @@ export default function GeneraCartaVino() {
                 userActivities={userActivities}
                 isLoadingActivities={isLoadingActivities}
                 onActivitySelect={onActivitySelect}
-                limitError={limitError}
+                limitError={activeLimitError}
                 modalState={modalState}
                 onCloseModal={() => setModalState({ isOpen: false, initialView: 'register' })}
                 onOpenLoginModal={() => setModalState({ isOpen: true, initialView: 'login' })}
@@ -111,7 +110,7 @@ export default function GeneraCartaVino() {
           )}
         </form>
 
-        {error && !limitError && <p className="error">{error}</p>}
+        {error && !activeLimitError && <p className="error">{error}</p>}
       </div>
 
       <PreviewOverlay

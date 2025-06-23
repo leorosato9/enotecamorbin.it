@@ -1,29 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-
 import { useFormState } from './genera-carta-vino/useFormState';
 import { useLocationLogic } from './genera-carta-vino/useLocationLogic';
 import { useSubmission } from './genera-carta-vino/useSubmission';
-
 import { PLAN_CONFIG } from '../lib/config/plans';
-
 
 export default function useGeneraCartaVino() {
   const { data: session, status, update } = useSession();
   const formState = useFormState();
   const locationState = useLocationLogic();
-
   const [modalState, setModalState] = useState({ isOpen: false, initialView: 'register' });
-  
   const [userActivities, setUserActivities] = useState([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
-
   const [selectedActivityId, setSelectedActivityId] = useState(null);
-
-  const [limitError, setLimitError] = useState(null);
+  const [restaurantLimitError, setRestaurantLimitError] = useState(null);
+  const [weeklyLimitError, setWeeklyLimitError] = useState(null);
 
   useEffect(() => {
     if (status === 'authenticated') {
+      fetch('/api/user/carta-allowance')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.canCreateMenu) {
+                setWeeklyLimitError(data.message);
+            }
+        })
+        .catch(err => console.error("Failed to fetch carta allowance status", err));
+      
       setIsLoadingActivities(true);
       fetch('/api/user/activities')
         .then(res => res.json())
@@ -39,15 +42,13 @@ export default function useGeneraCartaVino() {
     if (status === 'authenticated' && !isLoadingActivities) {
       const userPlan = session?.user?.plan || 'free';
       const restaurantLimit = PLAN_CONFIG[userPlan]?.limits.restaurants;
-
       if (typeof restaurantLimit === 'number' && userActivities.length >= restaurantLimit) {
-        setLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il piano ${PLAN_CONFIG[userPlan].name}. Fai l'upgrade a Plus!`);
+        setRestaurantLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il piano ${PLAN_CONFIG[userPlan].name}. Fai l'upgrade a Plus!`);
       } else {
-        setLimitError(null);
+        setRestaurantLimitError(null);
       }
     }
   }, [status, userActivities, isLoadingActivities, session]);
-
 
   const { setNome, setFascia } = formState;
   const { setRegione, setProvincia, setComune } = locationState;
@@ -70,9 +71,7 @@ export default function useGeneraCartaVino() {
     }
   }, [setNome, setRegione, setFascia, setProvincia, setComune]);
 
-  const handleLoginSuccess = () => {
-    update();
-  };
+  const handleLoginSuccess = () => update();
 
   const submissionDependencies = {
     filePdf: formState.filePdf,
@@ -99,7 +98,8 @@ export default function useGeneraCartaVino() {
     modalState,
     setModalState,
     handleLoginSuccess,
-    limitError,
+    restaurantLimitError,
+    weeklyLimitError,
     selectedActivityId, 
   };
 }
