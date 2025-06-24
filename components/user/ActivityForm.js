@@ -39,7 +39,7 @@ export default function ActivityForm({ onSubmit, isSubmitting, error }) {
 
   return (
     <div>
-      <h2>Aggiungi la tua attività</h2>
+      <h2>Aggiungi attività</h2>
       <form onSubmit={handleFormSubmit}>
         {isLimitError && (
           <div className="error-message-box">
