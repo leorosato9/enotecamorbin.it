@@ -128,7 +128,7 @@ export default function LoginPage() {
                     <input type="text" required value={cognome} onChange={e => setCognome(e.target.value)} />
                   </>
                 )}
-                <label>Indirizzo email</label>
+                <label>Indirizzo emaillllllll</label>
                 <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
                 <label>Password</label>
                 <input type="password" required value={password} onChange={e => setPassword(e.target.value)} />
