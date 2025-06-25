@@ -1,9 +1,19 @@
-export default function VinoCard({ vino, expl, isOpen, toggle, getDotColor, isSelected, onSelectionChange }) {
+import React from 'react';
+import { inflateAffinity } from '../../utils/affinity';
 
+export default function VinoCard({
+  vino,
+  expl,
+  isOpen,
+  toggle,
+  getDotColor,
+  isSelected,
+  onSelectionChange
+}) {
   const { metadata = {}, categoria } = vino;
-  const produttore = metadata.produttore || '';
+  const produttore    = metadata.produttore   || '';
   const denominazione = metadata.denominazione || '';
-  const annata = metadata.annata || '';
+  const annata        = metadata.annata        || '';
   
   const formattedName = produttore && denominazione
     ? `${produttore} – ${denominazione}${annata ? ` ${annata}` : ''}`
@@ -11,7 +21,17 @@ export default function VinoCard({ vino, expl, isOpen, toggle, getDotColor, isSe
     
   const prezzo = metadata.prezzo ? `€ ${metadata.prezzo}` : '—';
 
-  const handleCheckboxClick = (e) => {
+  // Applichiamo la "gonfiatura" del punteggio
+  const percentuale = inflateAffinity(vino.score, 'cosine');
+
+  // Fallback per la chiave explanation/explanations
+  const explanationArray = Array.isArray(expl.explanation)
+    ? expl.explanation
+    : Array.isArray(expl.explanations)
+      ? expl.explanations
+      : [];
+
+  const handleCheckboxClick = e => {
     e.stopPropagation();
     onSelectionChange();
   };
@@ -24,16 +44,23 @@ export default function VinoCard({ vino, expl, isOpen, toggle, getDotColor, isSe
             type="checkbox"
             checked={isSelected}
             onChange={handleCheckboxClick}
-            onClick={(e) => e.stopPropagation()} 
+            onClick={e => e.stopPropagation()}
             className="resultsCheck"
           />
           <div className="vinoTitleRow">{formattedName}</div>
-          <img src="/down.png" alt="Espandi" className={`vinoArrow ${isOpen ? 'open' : ''}`} />
+          <img 
+            src="/down.png" 
+            alt="Espandi" 
+            className={`vinoArrow ${isOpen ? 'open' : ''}`} 
+          />
         </div>
         <div className="vinoMetaRow">
           <span className="vinoScoreWithDot">
-            <span className="vinoCategoriaDot" style={{ backgroundColor: getDotColor(categoria) }}></span>
-            <span className="vinoScore">{(vino.score * 100).toFixed(0)}%</span>
+            <span 
+              className="vinoCategoriaDot" 
+              style={{ backgroundColor: getDotColor(categoria) }}
+            />
+            <span className="vinoScore">{percentuale}%</span>
           </span>
           <span className="vinoPrice">{prezzo}</span>
         </div>
@@ -42,12 +69,20 @@ export default function VinoCard({ vino, expl, isOpen, toggle, getDotColor, isSe
       <div className={`vinoDetails ${isOpen ? 'open' : ''}`}>
         <div className="vinoDetailsInner">
           {categoria && <p><strong>Categoria:</strong> {categoria}</p>}
-          {expl.bullets.length > 0 && (
-            <div>
-              {expl.bullets.map((b, bi) => <div key={bi}>• {b}</div>)}
+
+          {expl.bullets && expl.bullets.length > 0 && (
+            <div className="vinoBullets">
+              {expl.bullets.map((b, bi) => (
+                <div key={bi}>• {b}</div>
+              ))}
             </div>
           )}
-          <p>{expl.explanation}</p>
+
+          {explanationArray.map((linea, idx) => (
+            typeof linea === 'string' && (
+              <p key={idx} className="vinoDeepDive">{linea}</p>
+            )
+          ))}
         </div>
       </div>
     </div>

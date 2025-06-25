@@ -9,9 +9,12 @@ export function useFormState() {
   const [showDetails, setShowDetails] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  const fileURL = useMemo(() => (filePdf ? URL.createObjectURL(filePdf) : null), [filePdf]);
-  
-  const handleFileChange = (e) => {
+  const fileURL = useMemo(
+    () => (filePdf ? URL.createObjectURL(filePdf) : null),
+    [filePdf]
+  );
+
+  const handleFileChange = e => {
     setFilePdf(e.target.files?.[0] ?? null);
     setShowDetails(false);
     setShowPreview(false);
@@ -38,6 +41,6 @@ export function useFormState() {
     fileURL,
     handleFileChange,
     handleChangeMenu,
-    handleViewMenu,
+    handleViewMenu
   };
 }

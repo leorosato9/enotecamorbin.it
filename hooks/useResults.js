@@ -19,15 +19,17 @@ export default function useResults() {
   const [selectedWines, setSelectedWines] = useState([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
+  const [regenerationLimit, setRegenerationLimit] = useState(null);
+  const [regenerationCount, setRegenerationCount]   = useState(null);
+
   useEffect(() => {
     if (!isReady || !id) return;
 
     setLoading(true);
     setError('');
 
-    fetch(`/api/results/${Array.isArray(id) ? id.join(',') : id}`)
+    fetch(`/api/results/${Array.isArray(id) ? id[0] : id}`)
       .then(res => {
-        // Rende la gestione dell'errore più affidabile
         if (!res.ok) return Promise.reject(res);
         return res.json();
       })
@@ -37,16 +39,24 @@ export default function useResults() {
         setFileUrl(fetchedData.fileUrl || null);
         setFileType(fetchedData.fileType || '');
         setMenuText(fetchedData.menuText || '');
-        // --- QUESTA È LA CORREZIONE FONDAMENTALE ---
         setMenuEmbedding(fetchedData.menuEmbedding || []);
+        
+        // --- QUESTA È LA CORREZIONE FONDAMENTALE ---
+        // Salviamo i dati delle rigenerazioni nello stato dell'hook.
+        setRegenerationLimit(fetchedData.regenerationLimit);
+        setRegenerationCount(fetchedData.regenerationCount);
+        // ---------------------------------------------
+        
         try {
-          setSpiegazioni(typeof fetchedData.spiegazioni === 'string' ? JSON.parse(fetchedData.spiegazioni) : fetchedData.spiegazioni || []);
+          const parsedSpiegazioni = typeof fetchedData.spiegazioni === 'string' 
+              ? JSON.parse(fetchedData.spiegazioni) 
+              : fetchedData.spiegazioni || [];
+          setSpiegazioni(parsedSpiegazioni);
         } catch {
           setSpiegazioni([]);
         }
       })
       .catch(async (err) => {
-        // Gestisce sia errori di rete sia risposte non-ok
         try {
             const errorData = await err.json();
             setError(errorData.message || `Errore (${err.status})`);
@@ -70,10 +80,7 @@ export default function useResults() {
   };
 
   const handleViewMenu = () => {
-    if (!fileUrl) {
-      console.warn("Tentativo di visualizzare il menù, ma fileUrl non è disponibile.");
-      return;
-    }
+    if (!fileUrl) return;
     setShowPreview(true);
   };
 
@@ -82,7 +89,7 @@ export default function useResults() {
     const lower = categoria.toLowerCase();
     if (lower.includes('rosso')) return '#d32f2f';
     if (lower.includes('bianco')) return '#fdd835';
-    if (lower.includes('rosè')) return '#f48fb1';
+    if (lower.includes('rosé')) return '#f48fb1';
     if (lower.includes('champagne') || lower.includes('spumante')) return '#81d4fa';
     return '#ccc';
   };
@@ -93,6 +100,7 @@ export default function useResults() {
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
+    setError('');
     
     try {
       const response = await fetch('/api/rigenera-carta', {
@@ -119,6 +127,7 @@ export default function useResults() {
       if (newData.success) {
         setRisultati(newData.risultati);
         setSpiegazioni(newData.spiegazioni);
+        setRegenerationCount(prev => (typeof prev === 'number' ? prev + 1 : 1));
       } else {
         throw new Error(newData.message || 'Errore durante la rigenerazione.');
       }
@@ -135,6 +144,7 @@ export default function useResults() {
   return {
     id, loading, error, risultati, spiegazioni, ristorante, fileUrl, fileType,
     showPreview, openStates, toggleCard, handleViewMenu, setShowPreview,
-    getDotColor, selectedWines, handleWinesSelection, isRegenerating, handleRegenerate
+    getDotColor, selectedWines, handleWinesSelection, isRegenerating, handleRegenerate,
+    regenerationCount, regenerationLimit
   };
 }

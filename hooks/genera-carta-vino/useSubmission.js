@@ -1,15 +1,23 @@
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+import { useState, useCallback } from 'react';
 
-export function useSubmission({ filePdf, nome, regione, provincia, comune, fascia, setError, setLoading, activityId }) {
+export function useSubmission({
+  filePdf, nome, regione, provincia, comune, fascia, activityId,
+  setError, setLoading
+}) {
   const router = useRouter();
-  const { status } = useSession();
-  const [showModal, setShowModal] = useState(false);
-  const [shouldSubmitAfterAuth, setShouldSubmitAfterAuth] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleActualSubmit = async () => {
+  const handleFormSubmit = useCallback(async e => {
+    e.preventDefault();
+    if (!filePdf) {
+      setError('Devi caricare un menù prima di procedere.');
+      return;
+    }
+
     setLoading(true);
+    setIsSubmitting(true);
+
     const formData = new FormData();
     formData.append('file', filePdf);
     formData.append('nome', nome);
@@ -17,43 +25,29 @@ export function useSubmission({ filePdf, nome, regione, provincia, comune, fasci
     formData.append('provincia', provincia);
     formData.append('comune', comune);
     formData.append('fascia', fascia);
-    if (activityId) {
+    if (activityId && activityId !== 'new') {
       formData.append('activityId', activityId);
     }
+
     try {
-      const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error((await res.json()).error || 'Errore sconosciuto');
-      const { id } = await res.json();
-      router.push(`/results/${id}`);
+      const res = await fetch('/api/crea-carta', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Errore durante la creazione.');
+      }
+      router.push(`/results/${data.id}`);
     } catch (err) {
-      setError('Errore nella creazione della carta: ' + err.message);
+      setError('Errore: ' + err.message);
       setLoading(false);
+      setIsSubmitting(false);
     }
-  };
+  }, [
+    filePdf, nome, regione, provincia, comune, fascia,
+    activityId, router, setError, setLoading
+  ]);
 
-  useEffect(() => {
-    if (!showModal && shouldSubmitAfterAuth && status === 'authenticated') {
-      setShouldSubmitAfterAuth(false);
-      handleActualSubmit();
-    }
-  }, [showModal, shouldSubmitAfterAuth, status]);
-
-  const handleFormSubmit = e => {
-    e.preventDefault();
-    if (!filePdf) {
-      setError('Devi caricare un menù per poter generare la carta dei vini.');
-      return;
-    }
-    if (status === 'authenticated') handleActualSubmit();
-    else {
-      setShouldSubmitAfterAuth(true);
-      setShowModal(true);
-    }
-  };
-
-  return {
-    showModal,
-    setShowModal,
-    handleFormSubmit,
-  };
+  return { handleFormSubmit, loading: isSubmitting };
 }

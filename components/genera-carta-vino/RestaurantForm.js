@@ -34,16 +34,18 @@ export default function RestaurantForm({
     onActivitySelect(selected);
   };
   
+  // Questa logica ora gestisce la disabilitazione dei campi in modo più granulare
+  const isExistingActivitySelected = userActivities.some(act => act.nome === nome) && !isCreatingNew;
   const isCreatingNew = !userActivities.some(act => act.nome === nome);
-  const fieldsDisabled = loading || !isCreatingNew;
+  const fieldsDisabled = loading || isExistingActivitySelected;
 
   return (
     <div className="riquadro2">
       <p className="riquadro2__main-text">Ristorante</p>
       
       {status === 'authenticated' && userActivities.length > 0 && (
-        <div>
-          <label htmlFor="activity-select" className="riquadro2__sub-text">Seleziona un'attività esistente</label>
+        <div className="form-group"> {/* Applicato anche qui per coerenza */}
+          <label htmlFor="activity-select" className="riquadro2__sub-text">Seleziona un'attività esistente o creane una nuova</label>
           <select 
             id="activity-select" 
             className="noBorderSelect" 
@@ -52,7 +54,7 @@ export default function RestaurantForm({
             value={isCreatingNew ? 'new' : userActivities.find(act => act.nome === nome)?._id || 'new'}
           >
             {userActivities.map(act => <option key={act._id} value={act._id}>{act.nome}</option>)}
-            <option value="new">- Crea nuova -</option>
+            <option value="new">- Crea nuova attività -</option>
           </select>
         </div>
       )}
@@ -75,53 +77,57 @@ export default function RestaurantForm({
             </p>
           )}
 
+          {/* Opacità per indicare se il form è attivo o meno */}
           <div style={{ opacity: isCreatingNew ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-            <div>
+            
+            {/* --- GRUPPO 1: INSEGNA --- */}
+            <div className="form-group">
               <label htmlFor="nome" className="labelTitle">Insegna</label>
               <input className="underlineInput" type="text" id="nome" value={nome} onChange={e => setNome(e.target.value)} required disabled={fieldsDisabled} />
             </div>
 
-            <label htmlFor="regione" className="labelTitle">Regione</label>
-            <div className="region-buttons">
-              {regioni.map(reg => (
-                <button
-                  key={reg}
-                  type="button"
-                  className={`region-button ${regione === reg ? 'selected' : ''}`}
-                  onClick={() => setRegione(reg)}
-                  disabled={fieldsDisabled}
-                >
-                  {reg}
-                </button>
-              ))}
+            {/* --- GRUPPO 2: REGIONE --- */}
+            <div className="form-group">
+              <label htmlFor="regione" className="labelTitle">Regione</label>
+              <div className="region-buttons">
+                {regioni.map(reg => (
+                  <button key={reg} type="button" className={`region-button ${regione === reg ? 'selected' : ''}`} onClick={() => setRegione(reg)} disabled={fieldsDisabled}>
+                    {reg}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <label htmlFor="provincia" className="labelTitle">Provincia</label>
-            <select id="provincia" className="noBorderSelect" value={provincia} onChange={e => setProvincia(e.target.value)} required disabled={!provinceList.length || fieldsDisabled}>
-              <option value="">Scegli</option>
-              {provinceList.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-
-            <label htmlFor="comune" className="labelTitle">Comune</label>
-            <select id="comune" className="noBorderSelect" value={comune} onChange={e => setComune(e.target.value)} required disabled={!comuniList.length || fieldsDisabled}>
-              <option value="">Scegli</option>
-              {comuniList.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-
-            <label className="labelTitle">Fascia di prezzo</label>
-            <div className="fascia-buttons">
-              {['€', '€€', '€€€', '€€€€', '€€€€€'].map(sym => (
-                <button
-                  key={sym}
-                  type="button"
-                  onClick={() => setFascia(sym)}
-                  className={`customBuyButton ${fascia === sym ? 'selected' : ''}`}
-                  disabled={fieldsDisabled}
-                >
-                  {sym}
-                </button>
-              ))}
+            {/* --- GRUPPO 3: PROVINCIA --- */}
+            <div className="form-group">
+              <label htmlFor="provincia" className="labelTitle">Provincia</label>
+              <select id="provincia" className="noBorderSelect" value={provincia} onChange={e => setProvincia(e.target.value)} required disabled={!provinceList.length || fieldsDisabled}>
+                <option value="">Scegli</option>
+                {provinceList.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
+
+            {/* --- GRUPPO 4: COMUNE --- */}
+            <div className="form-group">
+              <label htmlFor="comune" className="labelTitle">Comune</label>
+              <select id="comune" className="noBorderSelect" value={comune} onChange={e => setComune(e.target.value)} required disabled={!comuniList.length || fieldsDisabled}>
+                <option value="">Scegli</option>
+                {comuniList.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* --- GRUPPO 5: FASCIA DI PREZZO --- */}
+            <div className="form-group">
+              <label className="labelTitle">Fascia di prezzo</label>
+              <div className="fascia-buttons">
+                {['€', '€€', '€€€', '€€€€', '€€€€€'].map(sym => (
+                  <button key={sym} type="button" onClick={() => setFascia(sym)} className={`customBuyButton ${fascia === sym ? 'selected' : ''}`} disabled={fieldsDisabled}>
+                    {sym}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
           </div>
         </div>
       )}

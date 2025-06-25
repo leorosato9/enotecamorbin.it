@@ -1,43 +1,69 @@
 import Head from 'next/head';
 import React from 'react';
+import { useSession } from 'next-auth/react';
+
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+
 import LoadingScreen from '../components/ui/LoadingScreen';
 import PreviewOverlay from '../components/ui/PreviewOverlay';
+
 import FileUpload from '../components/genera-carta-vino/FileUpload';
 import RestaurantForm from '../components/genera-carta-vino/RestaurantForm';
+
 import useGeneraCartaVino from '../hooks/useGeneraCartaVino';
 
 export default function GeneraCartaVino() {
+  const { status } = useSession();
   const {
-    nome, setNome, fascia, setFascia, filePdf, loading, error: genericError,
-    showDetails, setShowPreview, showPreview, fileURL, setShowDetails, handleFileChange, handleViewMenu,
-    handleChangeMenu, handleFormSubmit, regione, setRegione, provincia, setProvincia,
-    provinceList, comune, setComune, comuniList, authStatus, userActivities,
-    isLoadingActivities, onActivitySelect, restaurantLimitError, weeklyLimitError,
+    nome, setNome,
+    fascia, setFascia,
+    filePdf,
+    loading,
+    error,
+    showDetails, setShowDetails,
+    showPreview, setShowPreview,
+    fileURL,
+
+    handleFileChange,
+    handleChangeMenu,
+    handleViewMenu,
+
+    regione, setRegione,
+    provincia, setProvincia,
+    comune, setComune,
+    provinceList, comuniList,
+
+    userActivities,
+    isLoadingActivities,
+    onActivitySelect,
+    restaurantLimitError,
+    weeklyLimitError,
+    activityId,
+
+    handleFormSubmit
   } = useGeneraCartaVino();
 
-  if (loading) return <LoadingScreen />;
-    const isCreatingNew = !userActivities.some(act => act.nome === nome);
-
-  let errorForForm = null;
-  if (isCreatingNew) {
-    errorForForm = restaurantLimitError || weeklyLimitError;
-  } else {
-    errorForForm = weeklyLimitError;
-  }
-  
+  const isCreatingNew   = !userActivities.some(a => a.nome === nome);
+  const errorForForm    = isCreatingNew ? restaurantLimitError : weeklyLimitError;
   const isActionBlocked = !!errorForForm;
 
+  if (loading) return <LoadingScreen />;
+
   return (
-    <div>
+    <>
       <Head>
-        <title>Enoteca Morbin | Abbina i vini al tuo menù</title>
+        <title>Enoteca Morbin | Genera Carta Vini</title>
       </Head>
+
       <Header />
-      <div className={`scheda ${showDetails ? 'scheda--compact' : ''}`}>
+
+      <main className={`scheda ${showDetails ? 'scheda--compact' : ''}`}>
         <h2 className="centralTitle">Carica il tuo menù</h2>
-        <h3 className="centralTitle">Carica o scatta una foto al tuo menù</h3>
+        <h3 className="centralTitle">PDF o foto del menù</h3>
+
+        {error && <p className="error-message-box">{error}</p>}
+
         <form onSubmit={handleFormSubmit}>
           <FileUpload
             file={filePdf}
@@ -47,11 +73,17 @@ export default function GeneraCartaVino() {
             onChangeMenu={handleChangeMenu}
             loading={loading}
           />
+
           {!showDetails && (
-            <button type="button" onClick={() => setShowDetails(true)} className="customBuyButton spaceButton">
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              className="customBuyButton spaceButton"
+            >
               Continua
             </button>
           )}
+
           {showDetails && (
             <>
               <RestaurantForm
@@ -67,18 +99,29 @@ export default function GeneraCartaVino() {
                 loading={loading}
                 error={errorForForm}
               />
+
               {!isActionBlocked && (
-                <button type="submit" disabled={loading} className="customBuyButton submitButton">
+                <button
+                  type="submit"
+                  className="customBuyButton submitButton"
+                  disabled={loading}
+                >
                   Genera la tua Carta Vini
                 </button>
               )}
             </>
           )}
         </form>
-        {genericError && !isActionBlocked && <p className="error">{genericError}</p>}
-      </div>
-      <PreviewOverlay show={showPreview} fileUrl={fileURL} fileType={filePdf?.type} onClose={() => setShowDetails(false)} />
+
+        <PreviewOverlay
+          show={showPreview}
+          fileUrl={fileURL}
+          fileType={filePdf?.type}
+          onClose={() => setShowPreview(false)}
+        />
+      </main>
+
       <Footer />
-    </div>
+    </>
   );
 }
