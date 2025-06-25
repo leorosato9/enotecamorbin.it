@@ -9,18 +9,13 @@ import { processPinecone } from '../../lib/services/carta/wineSelection';
 import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI';
 import { supabaseUpload } from '../../lib/services/carta/supabaseUpload';
 import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload';
-import { ObjectId } from 'mongodb';
-import { randomUUID } from 'crypto';
+import { ObjectId } from 'mongodb'; 
 
 export const config = {
   api: { bodyParser: false }
 };
 
 async function handler(req, res, session) {
-  // LOG 1: ID univoco per tracciare questa specifica richiesta nei log
-  const requestId = randomUUID().slice(0, 8);
-  console.log(`[${requestId}] ▶️ [crea-carta] Inizio esecuzione API.`);
-
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end();
@@ -29,34 +24,31 @@ async function handler(req, res, session) {
   try {
     const userId   = session.user.id;
     const userPlan = session.user.plan || 'free';
-    console.log(`[${requestId}] Utente: ${userId}, Piano: ${userPlan}`);
-
     const { db }   = await connectToDatabase();
+
     const { fields, files } = await parseForm(req);
     
-    console.log(`[${requestId}] Dati ricevuti dal form:`, JSON.stringify(fields, null, 2));
-    
+    // Controlliamo subito la presenza del file, che è sempre obbligatorio.
     const upload = Array.isArray(files.file) ? files.file[0] : files.file;
     if (!upload || !upload.filepath) {
-      throw new Error('[ERRORE] File del menù non trovato nel payload del form.');
+      throw new Error('File del menù mancante.');
     }
     const { filepath: filePath, mimetype: fileType } = upload;
-    console.log(`[${requestId}] File ricevuto correttamente. Percorso temporaneo: ${filePath}`);
 
     let activityData;
     let activityId;
     
-    const activityIdFromForm = fields.activityId?.[0];
+    // Logica di controllo robusta per distinguere i due casi.
+    // Estraiamo il valore dall'array di formidable in modo sicuro.
+    const activityIdFromForm = fields.activityId?.[0]; 
     const isNewActivity = !activityIdFromForm || activityIdFromForm === 'new';
-    console.log(`[${requestId}] Controllo attività: ID ricevuto='${activityIdFromForm}', isNewActivity=${isNewActivity}`);
 
     if (isNewActivity) {
-      console.log(`[${requestId}] Flusso NUOVA attività avviato.`);
+      // --- FLUSSO 1: L'UTENTE STA CREANDO UNA NUOVA ATTIVITÀ ---
       await checkRestaurantLimit(db, userId, userPlan);
-      console.log(`[${requestId}] Controllo limiti superato.`);
       
+      // Solo in questo caso, estraiamo e validiamo tutti i dati del form.
       const validatedData = extractAndValidateData({ fields, files });
-      console.log(`[${requestId}] Dati validati:`, validatedData.nome);
       activityData = {
         nome: validatedData.nome,
         regione: validatedData.regione,
@@ -64,45 +56,36 @@ async function handler(req, res, session) {
         comune: validatedData.comune,
         fascia: validatedData.fascia
       };
-      
+      // Salviamo la nuova attività e otteniamo il suo ID.
       activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
-      console.log(`[${requestId}] Nuova attività salvata. ID generato: ${activityId}`);
 
     } else {
-      console.log(`[${requestId}] Flusso ATTIVITÀ ESISTENTE avviato con ID: ${activityIdFromForm}`);
+      // --- FLUSSO 2: L'UTENTE HA SELEZIONATO UN'ATTIVITÀ ESISTENTE ---
       activityId = activityIdFromForm;
+      // Recuperiamo i dati completi dell'attività dal database, che è l'unica fonte sicura.
       const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
-      
       if (!found) {
-        console.error(`[${requestId}] ERRORE: Attività ${activityId} non trovata per l'utente ${userId}.`);
         return res.status(404).json({ success: false, message: 'Attività non valida o non appartenente a questo utente.' });
       }
-      activityData = found;
-      console.log(`[${requestId}] Attività esistente trovata nel DB: ${activityData.nome}`);
+      activityData = found; // Usiamo i dati sicuri presi dal DB.
     }
 
-    console.log(`[${requestId}] Verifica pre-generazione -> activityId: ${activityId}, Nome attività: ${activityData?.nome}`);
-    if(!activityId || !activityData) {
-      throw new Error(`[ERRORE CRITICO] una delle variabili chiave non è definita. activityId: ${activityId}, activityData: ${!!activityData}`);
+    // A questo punto, 'activityId' e 'activityData' sono GARANTITI essere definiti correttamente.
+    if(!activityId) {
+      // Questo errore di sicurezza non dovrebbe mai accadere con la nuova logica.
+      throw new Error("Errore critico: ID attività non definito dopo il controllo iniziale.");
     }
     
+    // --- PROCESSO DI GENERAZIONE UNIFICATO ---
     const publicUrl = await supabaseUpload(filePath, fileType);
-    console.log(`[${requestId}] File caricato su Supabase: ${publicUrl}`);
-
     const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath, fileType });
-    console.log(`[${requestId}] Testo ed embedding estratti.`);
-
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
-    console.log(`[${requestId}] ${topSelections.length} vini selezionati da Pinecone.`);
-
     const spiegazioniJson = await generateWineExplanations({ ...activityData, menuText, elencoBottiglie });
-    console.log(`[${requestId}] Spiegazioni generate da OpenAI.`);
     
     const cartaId = await saveCartaToMongo({
-      requestId, // Passiamo l'ID della richiesta per log concatenati
       userId,
       userEmail: session.user.email,
-      attivitaId,
+      attivitaId, // Variabile ora sempre definita
       nomeLocale: activityData.nome,
       regione: activityData.regione,
       provincia: activityData.provincia,
@@ -115,12 +98,11 @@ async function handler(req, res, session) {
       menuEmbedding,
       userPlan
     });
-    console.log(`[${requestId}] ✅ Processo completato. Risposta inviata al client.`);
 
     return res.status(201).json({ success: true, id: cartaId });
 
   } catch (error) {
-    console.error(`[${requestId}] ❌ ERRORE CATTURATO NEL BLOCCO FINALE:`, error);
+    console.error('[crea-carta] ERRORE:', error);
     return res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 }
