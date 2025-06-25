@@ -8,7 +8,7 @@ import { processMenuFile } from '../../lib/services/carta/textProcessor';
 import { processPinecone } from '../../lib/services/carta/wineSelection';
 import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI';
 import { supabaseUpload } from '../../lib/services/carta/supabaseUpload';
-import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload'; // Useremo la funzione di salvataggio singola
+import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload';
 import { ObjectId } from 'mongodb'; 
 
 export const config = {
@@ -26,36 +26,59 @@ async function handler(req, res, session) {
     const userPlan = session.user.plan || 'free';
     const { db }   = await connectToDatabase();
 
-    // 1. Parsing del form e validazione dei dati
     const { fields, files } = await parseForm(req);
-    const { nome, regione, provincia, comune, fascia, filePath, fileType } = extractAndValidateData({ fields, files });
     
-    // 2. Gestione Attività (nuova o esistente)
+    // Controlliamo subito se il file è stato caricato
+    const upload = Array.isArray(files.file) ? files.file[0] : files.file;
+    if (!upload || !upload.filepath) {
+      throw new Error('File del menù mancante.');
+    }
+    const { filepath: filePath, mimetype: fileType } = upload;
+
+    let activityData;
     let activityId;
-    const isNewActivity = !fields.activityId || fields.activityId[0] === 'new';
+    const activityField = fields.activityId;
+    const isNewActivity = !activityField || activityField[0] === 'new';
 
     if (isNewActivity) {
+      // --- FLUSSO PER NUOVA ATTIVITÀ ---
       await checkRestaurantLimit(db, userId, userPlan);
-      activityId = await saveAttivita({ userId, userEmail: session.user.email, nome, regione, provincia, comune, fascia });
+      // Validiamo i dati del form solo in questo caso
+      const validatedData = extractAndValidateData({ fields, files });
+      activityData = {
+        nome: validatedData.nome,
+        regione: validatedData.regione,
+        provincia: validatedData.provincia,
+        comune: validatedData.comune,
+        fascia: validatedData.fascia
+      };
+      activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
+
     } else {
-      activityId = fields.activityId[0];
+      // --- FLUSSO PER ATTIVITÀ ESISTENTE ---
+      activityId = activityField[0];
+      const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
+      if (!found) {
+        return res.status(404).json({ success: false, message: 'Attività non valida o non appartenente a questo utente.' });
+      }
+      activityData = found; // Usiamo i dati sicuri dal DB
     }
 
-    // 3. ESECUZIONE DI TUTTO IL PROCESSO IN MODO SINCRONO
+    // --- PROCESSO DI GENERAZIONE COMUNE ---
+    const publicUrl = await supabaseUpload(filePath, fileType);
     const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath, fileType });
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
-    const spiegazioniJson = await generateWineExplanations({ nome, regione, provincia, comune, fascia, menuText, elencoBottiglie });
-    const publicUrl = await supabaseUpload(filePath, files.file[0].mimetype);
+    const spiegazioniJson = await generateWineExplanations({ ...activityData, menuText, elencoBottiglie });
     
     const cartaId = await saveCartaToMongo({
       userId,
       userEmail: session.user.email,
-      attivitaId: activityId,
-      nomeLocale: nome,
-      regione,
-      provincia,
-      comune,
-      fascia,
+      attivitaId,
+      nomeLocale: activityData.nome,
+      regione: activityData.regione,
+      provincia: activityData.provincia,
+      comune: activityData.comune,
+      fascia: activityData.fascia,
       risultati: topSelections,
       spiegazioniJson,
       fileUrl: publicUrl,
@@ -64,11 +87,11 @@ async function handler(req, res, session) {
       userPlan
     });
 
-    // 4. Risposta al frontend solo DOPO che tutto è stato completato
     return res.status(201).json({ success: true, id: cartaId });
 
   } catch (error) {
     console.error('[crea-carta] Errore:', error);
+    // Invia un messaggio di errore più specifico al frontend
     return res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 }

@@ -1,8 +1,8 @@
 import { IncomingForm } from 'formidable';
 import { connectToDatabase } from '../../lib/mongodb';
-import { supabaseUpload } from '../../lib/services/carta/supabaseUpload';
-import fs from 'fs/promises'; // Importiamo il modulo 'fs' di Node.js per interagire con il filesystem
-import path from 'path';     // Importiamo 'path' per gestire i percorsi dei file in modo sicuro
+import { supabaseUpload } from '../../lib/supabaseUpload.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const config = {
   api: {
@@ -15,21 +15,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Metodo non consentito' });
   }
 
-  try {
-    // --- AGGIUNTA FONDAMENTALE ---
-    // Definiamo il percorso della cartella temporanea
-    const tempDir = path.resolve('./public/uploads/temp');
-    
-    // Assicuriamoci che la cartella esista, creandola se necessario.
-    // `recursive: true` crea anche le cartelle genitore se mancano (come `mkdir -p`).
-    await fs.mkdir(tempDir, { recursive: true });
-    // --- FINE AGGIUNTA ---
-
-    const form = new IncomingForm({
-      uploadDir: tempDir, // Usiamo il percorso sicuro che abbiamo appena verificato
+  
+  const form = new IncomingForm({
+      uploadDir: '/tmp',
       keepExtensions: true,
-    });
+  });
 
+  try {
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) return reject(err);
