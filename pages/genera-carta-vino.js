@@ -4,13 +4,10 @@ import { useSession } from 'next-auth/react';
 
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-
 import LoadingScreen from '../components/ui/LoadingScreen';
 import PreviewOverlay from '../components/ui/PreviewOverlay';
-
 import FileUpload from '../components/genera-carta-vino/FileUpload';
 import RestaurantForm from '../components/genera-carta-vino/RestaurantForm';
-
 import useGeneraCartaVino from '../hooks/useGeneraCartaVino';
 
 export default function GeneraCartaVino() {
@@ -65,6 +62,7 @@ export default function GeneraCartaVino() {
         {error && <p className="error-message-box">{error}</p>}
 
         <form onSubmit={handleFormSubmit}>
+          
           <FileUpload
             file={filePdf}
             onFileChange={handleFileChange}
@@ -73,7 +71,7 @@ export default function GeneraCartaVino() {
             onChangeMenu={handleChangeMenu}
             loading={loading}
           />
-
+          
           {!showDetails && (
             <button
               type="button"
