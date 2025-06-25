@@ -16,6 +16,7 @@ export const config = {
 };
 
 async function handler(req, res, session) {
+  console.log('[crea-carta] ▶️ Inizio esecuzione API.');
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end();
@@ -28,7 +29,9 @@ async function handler(req, res, session) {
 
     const { fields, files } = await parseForm(req);
     
-    // Controlliamo subito la presenza del file, che è sempre obbligatorio.
+    // --- LOG DI DEBUG 1: Contenuto del form ---
+    console.log('[crea-carta] Dati ricevuti dal form:', JSON.stringify(fields, null, 2));
+    
     const upload = Array.isArray(files.file) ? files.file[0] : files.file;
     if (!upload || !upload.filepath) {
       throw new Error('File del menù mancante.');
@@ -38,15 +41,16 @@ async function handler(req, res, session) {
     let activityData;
     let activityId;
     
-    // Logica di controllo robusta per distinguere i due casi
-    const activityIdFromForm = fields.activityId?.[0]; // Estrae il valore dall'array di formidable
+    const activityIdFromForm = fields.activityId?.[0];
     const isNewActivity = !activityIdFromForm || activityIdFromForm === 'new';
 
+    // --- LOG DI DEBUG 2: Decisione sul tipo di attività ---
+    console.log(`[crea-carta] Controllo attività: activityId ricevuto='${activityIdFromForm}', isNewActivity=${isNewActivity}`);
+
     if (isNewActivity) {
-      // --- FLUSSO 1: CREA NUOVA ATTIVITÀ ---
+      console.log('[crea-carta] Flusso: Creazione NUOVA attività.');
       await checkRestaurantLimit(db, userId, userPlan);
       
-      // Estraiamo e validiamo i dati del form solo in questo caso.
       const validatedData = extractAndValidateData({ fields, files });
       activityData = {
         nome: validatedData.nome,
@@ -55,32 +59,43 @@ async function handler(req, res, session) {
         comune: validatedData.comune,
         fascia: validatedData.fascia
       };
-      // Salviamo la nuova attività e otteniamo il suo ID.
       activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
+      console.log(`[crea-carta] Nuova attività creata con ID: ${activityId}`);
 
     } else {
-      // --- FLUSSO 2: USA ATTIVITÀ ESISTENTE ---
+      console.log(`[crea-carta] Flusso: Uso attività ESISTENTE con ID: ${activityIdFromForm}`);
       activityId = activityIdFromForm;
-      // Recuperiamo i dati dell'attività direttamente dal database per sicurezza.
       const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
       if (!found) {
+        console.error(`[crea-carta] Errore: Attività con ID ${activityId} non trovata per l'utente ${userId}`);
         return res.status(404).json({ success: false, message: 'Attività non valida o non appartenente a questo utente.' });
       }
-      activityData = found; // Usiamo i dati sicuri del DB.
+      activityData = found;
+      console.log(`[crea-carta] Attività esistente trovata: ${activityData.nome}`);
     }
 
-    // --- PROCESSO DI GENERAZIONE (COMUNE E SICURO) ---
-    // A questo punto, 'activityId' e 'activityData' sono garantiti essere definiti correttamente.
+    // --- LOG DI DEBUG 3: Verifica finale prima della generazione ---
+    console.log(`[crea-carta] Pronto per la generazione. activityId finale: ${activityId}`);
+    if(!activityId) {
+      throw new Error("ERRORE CRITICO: activityId non è definito prima della generazione.");
+    }
     
     const publicUrl = await supabaseUpload(filePath, fileType);
+    console.log('[crea-carta] File caricato su Supabase.');
+
     const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath, fileType });
+    console.log('[crea-carta] Testo ed embedding estratti dal menù.');
+
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
+    console.log('[crea-carta] Vini selezionati da Pinecone.');
+
     const spiegazioniJson = await generateWineExplanations({ ...activityData, menuText, elencoBottiglie });
+    console.log('[crea-carta] Spiegazioni generate da OpenAI.');
     
     const cartaId = await saveCartaToMongo({
       userId,
       userEmail: session.user.email,
-      attivitaId, // Variabile ora sempre definita
+      attivitaId,
       nomeLocale: activityData.nome,
       regione: activityData.regione,
       provincia: activityData.provincia,
@@ -93,11 +108,12 @@ async function handler(req, res, session) {
       menuEmbedding,
       userPlan
     });
+    console.log(`[crea-carta] ✅ Processo completato. Carta creata con ID: ${cartaId}`);
 
     return res.status(201).json({ success: true, id: cartaId });
 
   } catch (error) {
-    console.error('[crea-carta] Errore:', error);
+    console.error('[crea-carta] ERRORE NEL BLOCCO CATCH:', error);
     return res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 }
