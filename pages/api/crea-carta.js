@@ -28,7 +28,7 @@ async function handler(req, res, session) {
 
     const { fields, files } = await parseForm(req);
     
-    // Controlliamo subito se il file è stato caricato
+    // Controlliamo subito la presenza del file, che è sempre obbligatorio
     const upload = Array.isArray(files.file) ? files.file[0] : files.file;
     if (!upload || !upload.filepath) {
       throw new Error('File del menù mancante.');
@@ -43,7 +43,7 @@ async function handler(req, res, session) {
     if (isNewActivity) {
       // --- FLUSSO PER NUOVA ATTIVITÀ ---
       await checkRestaurantLimit(db, userId, userPlan);
-      // Validiamo i dati del form solo in questo caso
+      // Estraiamo e validiamo i dati del form UNA SOLA VOLTA
       const validatedData = extractAndValidateData({ fields, files });
       activityData = {
         nome: validatedData.nome,
@@ -52,19 +52,21 @@ async function handler(req, res, session) {
         comune: validatedData.comune,
         fascia: validatedData.fascia
       };
+      // Salviamo la nuova attività e otteniamo il suo ID
       activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
 
     } else {
       // --- FLUSSO PER ATTIVITÀ ESISTENTE ---
       activityId = activityField[0];
+      // Recuperiamo i dati dell'attività direttamente dal database per sicurezza
       const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
       if (!found) {
         return res.status(404).json({ success: false, message: 'Attività non valida o non appartenente a questo utente.' });
       }
-      activityData = found; // Usiamo i dati sicuri dal DB
+      activityData = found; // Usiamo i dati sicuri del DB
     }
 
-    // --- PROCESSO DI GENERAZIONE COMUNE ---
+    // --- PROCESSO DI GENERAZIONE (COMUNE AI DUE FLUSSI) ---
     const publicUrl = await supabaseUpload(filePath, fileType);
     const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath, fileType });
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
@@ -73,7 +75,7 @@ async function handler(req, res, session) {
     const cartaId = await saveCartaToMongo({
       userId,
       userEmail: session.user.email,
-      attivitaId,
+      attivitaId, // Ora questa variabile è sempre definita correttamente
       nomeLocale: activityData.nome,
       regione: activityData.regione,
       provincia: activityData.provincia,
@@ -91,7 +93,6 @@ async function handler(req, res, session) {
 
   } catch (error) {
     console.error('[crea-carta] Errore:', error);
-    // Invia un messaggio di errore più specifico al frontend
     return res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 }
