@@ -85,7 +85,7 @@ async function handler(req, res, session) {
     const cartaId = await saveCartaToMongo({
       userId,
       userEmail: session.user.email,
-      attivitaId, // Variabile ora sempre definita
+      attivitaId: activityId,
       nomeLocale: activityData.nome,
       regione: activityData.regione,
       provincia: activityData.provincia,
