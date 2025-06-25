@@ -7,7 +7,7 @@ import { processPinecone } from '../../lib/services/carta/wineSelection';
 import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI';
 import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload';
 import { saveAttivita } from '../../lib/services/attivita/saveAttivita';
-import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter'; // <-- 1. IMPORTIAMO LA FUNZIONE
+import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter';
 import fs from 'fs/promises';
 import path from 'path';
 

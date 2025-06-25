@@ -1,6 +1,6 @@
 import { IncomingForm } from 'formidable';
 import { connectToDatabase } from '../../lib/mongodb';
-import { supabaseUpload } from '../../lib/supabaseUpload.js';
+import { supabaseUpload } from '../../lib/services/carta/supabaseUpload';
 import fs from 'fs/promises';
 import path from 'path';
 
