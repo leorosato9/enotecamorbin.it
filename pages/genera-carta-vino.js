@@ -59,7 +59,7 @@ export default function GeneraCartaVino() {
         <h2 className="centralTitle">Carica il tuo menù</h2>
         <h3 className="centralTitle">PDF o foto del menù</h3>
 
-        {error && <p className="error-message-box">{error}</p>}
+      {error && <p className="error-message-box">{error}</p>}
 
         <form onSubmit={handleFormSubmit}>
           

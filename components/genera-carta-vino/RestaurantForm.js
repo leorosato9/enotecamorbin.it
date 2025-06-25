@@ -35,8 +35,8 @@ export default function RestaurantForm({
   };
   
   // Questa logica ora gestisce la disabilitazione dei campi in modo più granulare
-  const isExistingActivitySelected = userActivities.some(act => act.nome === nome) && !isCreatingNew;
   const isCreatingNew = !userActivities.some(act => act.nome === nome);
+  const isExistingActivitySelected = userActivities.some(act => act.nome === nome) && !isCreatingNew;
   const fieldsDisabled = loading || isExistingActivitySelected;
 
   return (

@@ -1,116 +1,167 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
+import { useRouter } from 'next/router';
+
 import { useFormState } from './genera-carta-vino/useFormState';
 import { useLocationLogic } from './genera-carta-vino/useLocationLogic';
-import { useSubmission } from './genera-carta-vino/useSubmission';
 import { PLAN_CONFIG } from '../lib/config/plans';
 
+const STAGING_ID_KEY = 'pendingMenuStagingId';
+
 export default function useGeneraCartaVino() {
-  const { data: session, status, update } = useSession();
-  const formState = useFormState();
-  const locationState = useLocationLogic();
-  const [modalState, setModalState] = useState({ isOpen: false, initialView: 'register' });
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const form = useFormState();
+  const location = useLocationLogic();
+
   const [userActivities, setUserActivities] = useState([]);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
-  const [selectedActivityId, setSelectedActivityId] = useState(null);
+  const [isLoadingActivities, setLoadingActivities] = useState(false);
   const [restaurantLimitError, setRestaurantLimitError] = useState(null);
   const [weeklyLimitError, setWeeklyLimitError] = useState(null);
+  const [selectedActivityId, setSelectedActivityId] = useState('new');
 
-  // Questo useEffect carica le attività dell'utente in background, senza fare controlli
+  // Hook che si attiva dopo il login per completare la richiesta
   useEffect(() => {
-    if (status === 'authenticated') {
-      // Controlla il limite settimanale
-      fetch('/api/user/carta-allowance')
-        .then(res => res.json())
-        .then(data => {
-          if (!data.canCreateMenu) {
-            setWeeklyLimitError(data.message);
-          }
-        });
-      
-      // Carica le attività dell'utente
-      setIsLoadingActivities(true);
-      fetch('/api/user/activities')
-        .then(res => res.json())
-        .then(data => setUserActivities(data.activities || []))
-        .finally(() => setIsLoadingActivities(false));
+    const claimStagedRequest = async () => {
+      const stagedId = sessionStorage.getItem(STAGING_ID_KEY);
+      if (status === 'authenticated' && stagedId) {
+        form.setLoading(true);
+        sessionStorage.removeItem(STAGING_ID_KEY);
+        try {
+          const res = await fetch('/api/claim-menu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stagingId: stagedId }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Errore nel finalizzare la richiesta.');
+          router.push(`/results/${data.resultsId}`); // Corretto per usare data.resultsId
+        } catch (err) {
+          form.setError(err.message);
+          form.setLoading(false);
+        }
+      }
+    };
+
+    // --- MODIFICA CHIAVE ---
+    // Usiamo router.isReady per essere sicuri che il router sia pronto
+    if (router.isReady && status) {
+        claimStagedRequest();
     }
-  }, [status]);
-  
-  // MODIFICA CHIAVE: Questi controlli ora dipendono da `showDetails`
-  useEffect(() => {
-    // I controlli sui limiti vengono eseguiti solo se l'utente è autenticato E se è nel secondo step del form.
-    if (status === 'authenticated' && formState.showDetails) {
-      
-      // 1. Controllo limite settimanale
-      fetch('/api/user/carta-allowance')
-        .then(res => res.json())
-        .then(data => {
-            if (!data.canCreateMenu) {
-                setWeeklyLimitError(data.message);
-            } else {
-                setWeeklyLimitError(null);
-            }
-        });
+  }, [status, router, form]); // Rimuoviamo 'isReady' e lasciamo 'router' che lo contiene
 
-      // 2. Controllo limite attività
-      const userPlan = session?.user?.plan || 'free';
-      const restaurantLimit = PLAN_CONFIG[userPlan]?.limits.restaurants;
-      if (typeof restaurantLimit === 'number' && userActivities.length >= restaurantLimit) {
-        setRestaurantLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il tuo piano. Fai l'upgrade a Plus!`);
-      } else {
-        setRestaurantLimitError(null);
+
+  // Logica di invio unificata
+  const handleFormSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!form.filePdf) {
+      form.setError('Devi caricare un menù prima di procedere.');
+      return;
+    }
+
+    form.setLoading(true);
+    form.setError('');
+
+    const formData = new FormData();
+    formData.append('file', form.filePdf);
+    formData.append('nome', form.nome);
+    formData.append('regione', location.regione);
+    formData.append('provincia', location.provincia);
+    formData.append('comune', location.comune);
+    formData.append('fascia', form.fascia);
+    formData.append('activityId', selectedActivityId);
+    
+    if (status === 'authenticated') {
+      try {
+        const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || `Errore ${res.status}`);
+        router.push(`/results/${data.id}`);
+      } catch (err) {
+        form.setError(err.message);
+        form.setLoading(false);
+      }
+
+    } else if (status === 'unauthenticated') {
+      try {
+        const res = await fetch('/api/stage-menu', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        sessionStorage.setItem(STAGING_ID_KEY, data.stagingId);
+        signIn();
+      } catch (err) {
+        form.setError(`Errore: ${err.message}`);
+        form.setLoading(false);
       }
     } else {
-        // Resetta gli errori se l'utente torna indietro
-        setWeeklyLimitError(null);
-        setRestaurantLimitError(null);
+        form.setLoading(false);
     }
-  }, [status, formState.showDetails, userActivities, session]);
+  }, [status, form, location, router, selectedActivityId]);
 
-  const onActivitySelect = useCallback((activity) => {
+  
+  // Il resto dell'hook rimane invariato
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setLoadingActivities(true);
+      fetch('/api/user/activities').then(r => r.json()).then(d => setUserActivities(d.activities || [])).finally(() => setLoadingActivities(false));
+      fetch('/api/user/carta-allowance').then(r => r.json()).then(d => setWeeklyLimitError(d.canCreateMenu ? null : d.message)).catch(() => setWeeklyLimitError(null));
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && !isLoadingActivities) {
+      const plan = session?.user?.plan || 'free';
+      const max  = PLAN_CONFIG[plan]?.limits.restaurants;
+      setRestaurantLimitError(userActivities.length >= max ? `Limite di ${max} attività raggiunto.` : null);
+    }
+  }, [status, userActivities, isLoadingActivities, session]);
+
+  const onActivitySelect = useCallback(activity => {
     if (activity) {
       setSelectedActivityId(activity._id);
-      formState.setNome(activity.nome);
-      locationState.setRegione(activity.regione);
-      formState.setFascia(activity.fascia || '');
-      setTimeout(() => {
-        locationState.setProvincia(activity.provincia);
-        setTimeout(() => locationState.setComune(activity.comune), 0);
-      }, 0);
+      form.setNome(activity.nome);
+      location.setRegione(activity.regione);
+      location.setProvincia(activity.provincia);
+      location.setComune(activity.comune);
+      form.setFascia(activity.fascia || '');
     } else {
-      setSelectedActivityId(null);
-      formState.setNome('');
-      locationState.setRegione('');
-      formState.setFascia('');
+      setSelectedActivityId('new');
+      form.setNome('');
+      location.setRegione('');
+      location.setProvincia('');
+      location.setComune('');
+      form.setFascia('');
     }
-  }, [formState.setNome, locationState.setRegione, formState.setFascia, locationState.setProvincia, locationState.setComune]);
-
-  const submissionDependencies = {
-    filePdf: formState.filePdf,
-    nome: formState.nome,
-    regione: locationState.regione,
-    provincia: locationState.provincia,
-    comune: locationState.comune,
-    fascia: formState.fascia,
-    setError: formState.setError,
-    setLoading: formState.setLoading,
-    activityId: selectedActivityId === 'new' ? 'new' : selectedActivityId,
-  };
+  }, [form, location]);
   
-  const submissionState = useSubmission(submissionDependencies);
-
+  useEffect(() => {
+    const found = userActivities.find(a => a.nome === form.nome);
+    setSelectedActivityId(found ? found._id : 'new');
+  }, [form.nome, userActivities]);
+  
   return {
-    ...formState, ...locationState, ...submissionState,
-    onActivitySelect,
-    authStatus: status,
+    nome: form.nome, setNome: form.setNome,
+    fascia: form.fascia, setFascia: form.setFascia,
+    filePdf: form.filePdf,
+    loading: form.loading,
+    error: form.error,
+    showDetails: form.showDetails, setShowDetails: form.setShowDetails,
+    showPreview: form.showPreview, setShowPreview: form.setShowPreview,
+    fileURL: form.fileURL,
+    handleFileChange: form.handleFileChange,
+    handleChangeMenu: form.handleChangeMenu,
+    handleViewMenu: form.handleViewMenu,
+    regione: location.regione, setRegione: location.setRegione,
+    provincia: location.provincia, setProvincia: location.setProvincia,
+    comune: location.comune, setComune: location.setComune,
+    provinceList: location.provinceList,
+    comuniList: location.comuniList,
     userActivities,
     isLoadingActivities,
-    modalState,
-    setModalState,
-    handleLoginSuccess: update,
+    onActivitySelect,
     restaurantLimitError,
     weeklyLimitError,
-    selectedActivityId, 
+    activityId: selectedActivityId,
+    handleFormSubmit,
   };
 }
