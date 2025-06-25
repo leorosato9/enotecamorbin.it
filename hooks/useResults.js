@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
-import { PLAN_CONFIG } from '../../lib/config/plans';
+import { PLAN_CONFIG } from '../lib/config/plans';
 
 export default function useResults() {
   const { query, isReady } = useRouter();

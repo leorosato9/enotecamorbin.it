@@ -15,12 +15,7 @@ export default function RestaurantForm({
   userActivities,
   onActivitySelect,
   loading,
-<<<<<<< HEAD
   error,
-=======
-  weeklyLimitError,
-  restaurantLimitError,
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
 }) {
   const { status } = useSession();
   const router = useRouter();
@@ -32,53 +27,25 @@ export default function RestaurantForm({
       onActivitySelect(null);
     }
   }, [userActivities]);
-<<<<<<< HEAD
   
-=======
-
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
   const handleSelectActivity = (e) => {
     const activityId = e.target.value;
     const selected = activityId === 'new' ? null : userActivities.find(act => act._id === activityId);
     onActivitySelect(selected);
   };
-<<<<<<< HEAD
   
   // Questa logica ora gestisce la disabilitazione dei campi in modo più granulare
   const isExistingActivitySelected = userActivities.some(act => act.nome === nome) && !isCreatingNew;
   const isCreatingNew = !userActivities.some(act => act.nome === nome);
   const fieldsDisabled = loading || isExistingActivitySelected;
-=======
-
-  const isCreatingNew = !userActivities.some(act => act.nome === nome);
-  const fieldsDisabled = loading || !isCreatingNew;
-
-  let errorToShow = null;
-  if (isCreatingNew) {
-    if (restaurantLimitError) {
-      errorToShow = restaurantLimitError;
-    } else if (weeklyLimitError) {
-      errorToShow = weeklyLimitError;
-    }
-  } else {
-    errorToShow = weeklyLimitError;
-  }
-
-  const showInputFields = !errorToShow;
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
 
   return (
     <div className="riquadro2">
       <p className="riquadro2__main-text">Ristorante</p>
       
       {status === 'authenticated' && userActivities.length > 0 && (
-<<<<<<< HEAD
         <div className="form-group"> {/* Applicato anche qui per coerenza */}
           <label htmlFor="activity-select" className="riquadro2__sub-text">Seleziona un'attività esistente o creane una nuova</label>
-=======
-        <div>
-          <label htmlFor="activity-select" className="riquadro2__sub-text">Seleziona un'attività esistente</label>
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
           <select 
             id="activity-select" 
             className="noBorderSelect" 
@@ -87,7 +54,6 @@ export default function RestaurantForm({
             value={isCreatingNew ? 'new' : userActivities.find(act => act.nome === nome)?._id || 'new'}
           >
             {userActivities.map(act => <option key={act._id} value={act._id}>{act.nome}</option>)}
-<<<<<<< HEAD
             <option value="new">- Crea nuova attività -</option>
           </select>
         </div>
@@ -96,29 +62,11 @@ export default function RestaurantForm({
       {error ? (
         <div className="error-message-box">
           <p>{error}</p>
-=======
-            <option value="new">-- Crea una nuova attività --</option>
-          </select>
-        </div>
-      )}
-      
-      {errorToShow && (
-        <div className="error-message-box">
-          <p>{errorToShow}</p>
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
         </div>
       ) : (
         <div className='new-activity-fields'>
           {(status === 'authenticated' && userActivities.length > 0) && <hr style={{ margin: '2rem 0' }} />}
 
-<<<<<<< HEAD
-=======
-      {showInputFields && (
-        <div className="new-activity-fields">
-          
-          {(status === 'authenticated' && userActivities.length > 0) && <hr style={{ margin: '2rem 0' }} />}
-
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
           {status !== 'authenticated' && (
              <p className='loginSubtitle'>
               Hai già un account?{' '}
@@ -129,21 +77,15 @@ export default function RestaurantForm({
             </p>
           )}
 
-<<<<<<< HEAD
           {/* Opacità per indicare se il form è attivo o meno */}
           <div style={{ opacity: isCreatingNew ? 1 : 0.5, transition: 'opacity 0.3s' }}>
             
             {/* --- GRUPPO 1: INSEGNA --- */}
             <div className="form-group">
-=======
-          <div style={{ opacity: isCreatingNew ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-            <div>
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
               <label htmlFor="nome" className="labelTitle">Insegna</label>
               <input className="underlineInput" type="text" id="nome" value={nome} onChange={e => setNome(e.target.value)} required disabled={fieldsDisabled} />
             </div>
 
-<<<<<<< HEAD
             {/* --- GRUPPO 2: REGIONE --- */}
             <div className="form-group">
               <label htmlFor="regione" className="labelTitle">Regione</label>
@@ -186,49 +128,6 @@ export default function RestaurantForm({
               </div>
             </div>
             
-=======
-            <label htmlFor="regione" className="labelTitle">Regione</label>
-            <div className="region-buttons">
-              {regioni.map(reg => (
-                <button
-                  key={reg}
-                  type="button"
-                  className={`region-button ${regione === reg ? 'selected' : ''}`}
-                  onClick={() => setRegione(reg)}
-                  disabled={fieldsDisabled}
-                >
-                  {reg}
-                </button>
-              ))}
-            </div>
-
-            <label htmlFor="provincia" className="labelTitle">Provincia</label>
-            <select id="provincia" className="noBorderSelect" value={provincia} onChange={e => setProvincia(e.target.value)} required disabled={!provinceList.length || fieldsDisabled}>
-              <option value="">Scegli</option>
-              {provinceList.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-
-            <label htmlFor="comune" className="labelTitle">Comune</label>
-            <select id="comune" className="noBorderSelect" value={comune} onChange={e => setComune(e.target.value)} required disabled={!comuniList.length || fieldsDisabled}>
-              <option value="">Scegli</option>
-              {comuniList.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-
-            <label className="labelTitle">Fascia di prezzo</label>
-            <div className="fascia-buttons">
-              {['€', '€€', '€€€', '€€€€', '€€€€€'].map(sym => (
-                <button
-                  key={sym}
-                  type="button"
-                  onClick={() => setFascia(sym)}
-                  className={`customBuyButton ${fascia === sym ? 'selected' : ''}`}
-                  disabled={fieldsDisabled}
-                >
-                  {sym}
-                </button>
-              ))}
-            </div>
->>>>>>> 17c5d397fdec7c41322ea05a053ec7707aee91f7
           </div>
         </div>
       )}
