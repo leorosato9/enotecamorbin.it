@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "pages/api/crea-carta.js": {
+      "maxDuration": 300
+    },
+    "pages/api/stage-menu.js": {
+      "maxDuration": 60
+    },
+    "pages/api/claim-menu.js": {
+      "maxDuration": 300
+    },
+    "pages/api/rigenera-carta.js": {
+      "maxDuration": 300
+    }
+  }
+}
