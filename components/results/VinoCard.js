@@ -14,17 +14,14 @@ export default function VinoCard({
   const produttore    = metadata.produttore   || '';
   const denominazione = metadata.denominazione || '';
   const annata        = metadata.annata        || '';
-  
+
   const formattedName = produttore && denominazione
     ? `${produttore} – ${denominazione}${annata ? ` ${annata}` : ''}`
     : metadata.nome_completo || metadata.nomeVino || 'Nome non disponibile';
-    
-  const prezzo = metadata.prezzo ? `€ ${metadata.prezzo}` : '—';
 
-  // Applichiamo la "gonfiatura" del punteggio
+  const prezzo = metadata.prezzo ? `€ ${metadata.prezzo}` : '—';
   const percentuale = inflateAffinity(vino.score, 'cosine');
 
-  // Fallback per la chiave explanation/explanations
   const explanationArray = Array.isArray(expl.explanation)
     ? expl.explanation
     : Array.isArray(expl.explanations)
@@ -39,21 +36,24 @@ export default function VinoCard({
   return (
     <div className="vinoCard">
       <div className="vinoHeader" onClick={toggle}>
-        <div className="vinoTitleAndIcon">
+        <div className="vinoCardRow">
           <input
             type="checkbox"
             checked={isSelected}
             onChange={handleCheckboxClick}
             onClick={e => e.stopPropagation()}
-            className="resultsCheck"
+            className="vinoCardCheckbox"
           />
-          <div className="vinoTitleRow">{formattedName}</div>
-          <img 
-            src="/down.png" 
-            alt="Espandi" 
-            className={`vinoArrow ${isOpen ? 'open' : ''}`} 
-          />
+          <div className="vinoTitleAndIcon">
+            <div className="vinoTitleRow">{formattedName}</div>
+            <img 
+              src="/down.png" 
+              alt="Espandi" 
+              className={`vinoArrow ${isOpen ? 'open' : ''}`} 
+            />
+          </div>
         </div>
+
         <div className="vinoMetaRow">
           <span className="vinoScoreWithDot">
             <span 
@@ -68,13 +68,16 @@ export default function VinoCard({
 
       <div className={`vinoDetails ${isOpen ? 'open' : ''}`}>
         <div className="vinoDetailsInner">
+          {prezzo && <p><strong>Prezzo medio rivendita:</strong> {prezzo}</p>}
           {categoria && <p><strong>Categoria:</strong> {categoria}</p>}
 
           {expl.bullets && expl.bullets.length > 0 && (
             <div className="vinoBullets">
               {expl.bullets.map((b, bi) => (
                 <div key={bi}>• {b}</div>
-              ))}
+              ))} 
+
+              
             </div>
           )}
 

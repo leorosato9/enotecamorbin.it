@@ -18,7 +18,6 @@ export default function Risultati() {
   } = useResults();
 
   if (loading || isRegenerating) return <LoadingScreen />;
-
   if (error) {
     return (
       <main className="scheda"><p className="error">Errore: {error}</p></main>
@@ -27,7 +26,7 @@ export default function Risultati() {
 
   const canCalculateRegenerations = typeof regenerationLimit === 'number' && typeof regenerationCount === 'number';
   const regenerationsRemaining = canCalculateRegenerations ? regenerationLimit - regenerationCount : 0;
-  const hasRegenerations = canCalculateRegenerations ? regenerationsRemaining > 0 : false;
+  const hasRegenerations = regenerationsRemaining > 0;
 
   return (
     <>
@@ -45,17 +44,19 @@ export default function Risultati() {
             <p className='regeneration-counter descriptionP'>
               Seleziona i preferiti, rigenera i rimanenti
             </p>
+
             {risultati.map((vino, idx) => (
-              <VinoCard
-                key={vino.id || idx}
-                vino={vino}
-                expl={spiegazioni[idx] || { explanation: '', bullets: [] }}
-                isOpen={openStates[idx]}
-                toggle={() => toggleCard(idx)}
-                getDotColor={getDotColor}
-                isSelected={selectedWines.includes(vino.id)}
-                onSelectionChange={() => handleWinesSelection(vino.id)}
-              />
+              <div key={vino.id || idx}>
+                <VinoCard
+                  vino={vino}
+                  expl={spiegazioni[idx] || { explanation: '', bullets: [] }}
+                  isOpen={openStates[idx]}
+                  toggle={() => toggleCard(idx)}
+                  getDotColor={getDotColor}
+                  isSelected={selectedWines.includes(vino.id)}
+                  onSelectionChange={() => handleWinesSelection(vino.id)}
+                />
+              </div>
             ))}
           </section>
         ) : (

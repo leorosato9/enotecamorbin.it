@@ -1031,7 +1031,8 @@ textarea {
 }   
 
 .regeneration-counter {
-  margin-bottom: -0.7rem;
+  margin-bottom: -0.8rem;
+  margin-top: 1.2rem;
   padding-left: 1rem;
   padding-right: 1rem;
   font-size: 0.85rem;
@@ -1403,8 +1404,8 @@ textarea {
   .descriptionP {
     text-align: center;
     font-size: 0.8rem;
-    margin-top: 1.8rem;
-    margin-bottom: -0.9rem;
+    margin-top: 2rem;
+    margin-bottom: -1.2rem;
   }
 
   /* Stili per lo stato non selezionato */
@@ -1617,14 +1618,15 @@ textarea {
   .vinoCard {
     border: none;
     border-radius: 12px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0rem;
     padding: 1rem 1rem 0 1rem;
     box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.11);
     background-color: #fff;
     transition: box-shadow 0.3s;
     cursor: pointer;
-    margin-top: 1.2rem;
+    margin-top: 1.8rem;
     font-size: 0.8rem;
+    margin-bottom: 0.1rem;
   }
 
   .vinoCard:hover {
@@ -1718,7 +1720,47 @@ textarea {
     display: inline-flex;
     align-items: center;
     gap: 1rem;
+    margin-left: 2.7rem;
   }
+
+.vinoCardRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vinoCardCheckbox {
+  margin-top: 1.5rem;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #999;
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+}
+
+.vinoCardCheckbox:checked {
+  background-color: #3f3f3f;
+  border-color: #3f3f3f;
+}
+
+.vinoCardCheckbox:checked::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  background-color: white;
+  border-radius: 50%;
+}
+
 
   .infoContainer {
     flex-direction: column;
