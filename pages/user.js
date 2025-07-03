@@ -10,7 +10,7 @@ import Footer from '../components/layout/Footer';
 
 import ProfileCard from '../components/user/ProfileCard';
 import ActivityForm from '../components/user/ActivityForm';
-import ActivityList from '../components/user/ActivityList';
+import ActivityList from '../components/user/ActivityList.js';
 import PendingInvitations from '../components/user/PendingInvitations';
 
 import { useUserPage } from '../hooks/useUserPage';

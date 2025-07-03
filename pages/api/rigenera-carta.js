@@ -1,3 +1,4 @@
+// File: rigenera-carta.js
 import { withAuth } from '../../lib/auth/withAuth';
 import { findCategorizedReplacements } from '../../lib/services/carta/wineSelection.js';
 import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI.js';
@@ -12,7 +13,7 @@ async function rigeneraCartaHandler(req, res, session) {
   const {
     cartaId,
     risultati = [],
-    selectedWines = [], // Questi ora sono gli ID dei vini da TENERE
+    selectedWines = [],
     menuEmbedding,
     menuText,
     ristorante,
@@ -27,35 +28,31 @@ async function rigeneraCartaHandler(req, res, session) {
   }
 
   try {
-    // --- INIZIO LOGICA INVERTITA E CORRETTA ---
-
-    // I vini da TENERE (keptWines) sono quelli i cui ID sono in `selectedWines`.
+    // Vini da tenere
     const keptWines = risultati.filter(v => selectedWines.includes(v.id));
-
-    // I vini da SCARTARE (winesToDiscard) sono tutti gli altri.
+    // Vini da scartare
     const winesToDiscard = risultati.filter(v => !selectedWines.includes(v.id));
-
-    // Le spiegazioni da TENERE sono quelle corrispondenti ai vini tenuti.
+    // Spiegazioni da tenere
     const keptExplanations = [];
     risultati.forEach((vino, index) => {
-      if (selectedWines.includes(vino.id)) {
-        if (spiegazioni[index]) {
-          keptExplanations.push(spiegazioni[index]);
-        }
+      if (selectedWines.includes(vino.id) && spiegazioni[index]) {
+        keptExplanations.push(spiegazioni[index]);
       }
     });
 
     const replacementsNeeded = winesToDiscard.length;
-    // Se non ci sono vini da scartare (l'utente li ha selezionati tutti), non fare nulla.
+    console.log('[rigenera-carta] replacementsNeeded:', replacementsNeeded);
+
     if (replacementsNeeded === 0) {
-      return res.status(200).json({ 
-        success: true, 
-        risultati: risultati, 
-        spiegazioni: spiegazioni,
-        message: 'Nessun vino da sostituire.' 
+      return res.status(200).json({
+        success: true,
+        risultati,
+        spiegazioni,
+        message: 'Nessun vino da sostituire.'
       });
     }
 
+    // Trovo nuove selezioni e stringa dei nomi
     const { elencoBottiglie, topSelections } = await findCategorizedReplacements({
       menuEmbedding,
       selectedVectors: keptWines.map(v => v.values),
@@ -63,22 +60,26 @@ async function rigeneraCartaHandler(req, res, session) {
       allCurrentWines: risultati,
       replacementsNeeded
     });
+    console.log('[rigenera-carta] elencoBottiglie count:', topSelections.length);
 
-    // --- FINE LOGICA INVERTITA ---
-
-    if (!topSelections || !topSelections.length) {
+    if (!topSelections.length) {
       return res.status(404).json({
         success: false,
         message: 'Non sono stati trovati vini sostitutivi adeguati.'
       });
     }
 
+    // Genera spiegazioni per le nuove bottiglie, usando la stringa elencoBottiglie
     const spiegazioniJson = await generateWineExplanations({
-      ...ristorante,
+      nome: ristorante.nome,
+      indirizzo: ristorante.indirizzo,
       menuText,
       elencoBottiglie
     });
-    const newExplanations = JSON.parse(spiegazioniJson);
+    console.log('[rigenera-carta] raw spiegazioniJson:', spiegazioniJson);
+
+    const parsed = JSON.parse(spiegazioniJson);
+    const newExplanations = Array.isArray(parsed) ? parsed : parsed.explanations ?? [];
 
     const finalResults = [...keptWines, ...topSelections];
     const finalSpiegazioni = [...keptExplanations, ...newExplanations];
