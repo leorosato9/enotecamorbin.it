@@ -1761,6 +1761,18 @@ textarea {
   border-radius: 50%;
 }
 
+.loginBackButton {
+  display: inline-flex;        /* inline-flex rispetta height e allinea il contenuto */
+  align-items: center;         /* centra verticalmente il testo */
+  justify-content: center;     /* centra orizzontalmente */
+  min-height: 60px;               /* elimina eventuali min-height ereditati */
+  padding: 0 1rem;             /* solo padding orizzontale */
+  line-height: 1;              /* evita che il testo spinga l’altezza */
+  color: #3F464B;
+  margin-top: 1rem;
+}
+
+
 
   .infoContainer {
     flex-direction: column;

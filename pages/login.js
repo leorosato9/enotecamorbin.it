@@ -1,3 +1,4 @@
+// pages/login.js
 import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -62,7 +63,8 @@ export default function LoginPage() {
       } catch (err) {
         setError(err.message);
       }
-    } else { // Modalità Login
+    } else {
+      // Login
       const loginRes = await signIn('credentials', {
         redirect: false,
         email: email.trim().toLowerCase(),
@@ -76,7 +78,7 @@ export default function LoginPage() {
       }
     }
   };
-  
+
   const handleGoogleAuth = () => {
     signIn('google', { callbackUrl: finalRedirectUrl });
   };
@@ -86,10 +88,11 @@ export default function LoginPage() {
       <Head>
         <title>{mode === 'register' ? 'Registrati' : 'Accedi'} | Enoteca Morbin</title>
       </Head>
-      <div className="scheda" style={{maxWidth: '500px', margin: '2rem auto'}}>
+
+      <div className="scheda" style={{ margin: '2rem auto', maxWidth: '400px' }}>
         <div className="loginmodalContent">
           <img src="/logo.webp" alt="Logo" className="loginmodalLogo" />
-          
+
           {!authMethod && (
             <>
               <h2>{mode === 'register' ? 'Registrati' : 'Accedi'}</h2>
@@ -101,13 +104,12 @@ export default function LoginPage() {
                   {mode === 'register' ? 'Registrati con Google' : 'Accedi con Google'}
                 </button>
               </div>
-
               <p style={{ marginTop: '1rem', color: '#555' }}>
                 {mode === 'register' ? 'Hai già un account? ' : 'Non hai ancora un account? '}
                 <span
                   role="button"
                   tabIndex={0}
-                  onClick={() => setMode(prev => prev === 'login' ? 'register' : 'login')}
+                  onClick={() => setMode(prev => (prev === 'login' ? 'register' : 'login'))}
                   style={{ color: '#0070f3', textDecoration: 'underline', cursor: 'pointer' }}
                 >
                   {mode === 'register' ? 'Accedi' : 'Registrati'}
@@ -119,36 +121,51 @@ export default function LoginPage() {
           {authMethod === 'email' && (
             <>
               <h2>{mode === 'register' ? 'Registrati con Email' : 'Accedi con Email'}</h2>
-              <form onSubmit={handleSubmitEmail} style={{width: '100%'}}>
+              <form onSubmit={handleSubmitEmail}>
                 {mode === 'register' && (
                   <>
                     <label>Nome</label>
                     <input type="text" required value={nome} onChange={e => setNome(e.target.value)} />
+
                     <label>Cognome</label>
                     <input type="text" required value={cognome} onChange={e => setCognome(e.target.value)} />
                   </>
                 )}
+
                 <label>Indirizzo email</label>
-                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+                <div className="inputWithIcon">
+                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+                  <img src="/email.png" alt="" className="inputIcon" />
+                </div>
+
                 <label>Password</label>
-                <input type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+                <div className="inputWithIcon">
+                  <input type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+                  <img src="/key.png" alt="" className="inputIcon" />
+                </div>
+
                 {mode === 'register' && (
                   <>
                     <label>Conferma password</label>
-                    <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    <div className="inputWithIcon">
+                      <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                      <img src="/key.png" alt="" className="inputIcon" />
+                    </div>
+
                     <label>Telefono</label>
                     <input type="tel" required value={telefono} onChange={e => setTelefono(e.target.value)} />
                   </>
                 )}
-                <button type="submit" className="customBuyButton" style={{marginTop: '1rem', width: '100%'}}>
+
+                <button type="submit" className="customBuyButton">
                   {mode === 'register' ? 'Crea account' : 'Accedi'}
                 </button>
               </form>
 
-              {error && <p style={{ color: 'red' }}>{error}</p>}
-              {successMsg && <p style={{ color: 'green' }}>{successMsg}</p>}
+              {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
+              {successMsg && <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMsg}</p>}
 
-              <button onClick={() => setAuthMethod(null)} className="indietroButton whiteButton customBuyButton whiteButtonText" style={{marginTop: '1rem'}}>
+              <button onClick={() => setAuthMethod(null)} className="loginBackButton customBuyButton whiteButton" style={{ marginTop: '1rem' }}>
                 Indietro
               </button>
             </>
