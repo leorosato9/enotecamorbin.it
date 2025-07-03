@@ -61,9 +61,9 @@ export default async function handler(req, res) {
       { $set: { status: 'completata', userId: session.user.id } }
     );
     
-    const tempDir = path.resolve(process.cwd(), 'tmp');
-    await fs.mkdir(tempDir, { recursive: true });
+    const tempDir = '/tmp';
     tempFilePath = await downloadFile(requestToClaim.fileUrl, tempDir);
+
     
     const activityId = await saveAttivita({
         userId: session.user.id,
