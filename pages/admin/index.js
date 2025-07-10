@@ -10,24 +10,27 @@ export default function Admin() {
         <title>Enoteca Morbin | Admin</title>
       </Head>
 
-      <div>
+      <div className='scheda'>
         <h1>Admin - Seleziona un'opzione</h1>
         <div>
 
           <button
             onClick={() => router.push('/admin/degustazioni')}
+            className='customBuyButton slugButton'
           >
             Gestisci Degustazioni
           </button>
 
           <button
             onClick={() => router.push('/admin/bottiglie')}
+            className='customBuyButton slugButton'
           >
             Gestisci Bottiglie
           </button>
 
           <button
-            onClick={() => router.push('/admin/cartaVini')}
+            onClick={() => router.push('/admin/gestioneAI')}
+            className='customBuyButton slugButton'
           >
             Gestione AI
           </button>

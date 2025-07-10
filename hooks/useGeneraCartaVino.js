@@ -62,7 +62,11 @@ export default function useGeneraCartaVino() {
     form.setLoading(true);
     form.setError('');
 
+    const startTime = new Date().toISOString();
+    console.log("Tempo di avvio:", startTime);
+
     const formData = new FormData();
+    formData.append('startTime', startTime);
     formData.append('file', form.filePdf);
     formData.append('nome', form.nome);
     formData.append('regione', location.regione);
@@ -72,6 +76,8 @@ export default function useGeneraCartaVino() {
     formData.append('activityId', selectedActivityId);
     
     if (status === 'authenticated') {
+
+      
       try {
         const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
         const data = await res.json();

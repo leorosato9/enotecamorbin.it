@@ -103,7 +103,7 @@ export default function Bottiglie({ initialBottiglie }) {
         <title>Enoteca Morbin | Admin - Gestione Bottiglie</title>
       </Head>
 
-      <div className="adminContainer">
+      <div className="scheda">
         <h1>Gestione Bottiglie</h1>
 
         <div className="overTable">
