@@ -25,15 +25,17 @@ export default async function handler(req, res) {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const nuovoUtente = {
-      nome: nome.trim(),
-      cognome: cognome.trim(),
-      email: emailPulita,
-      passwordHash,
-      telefono: telefono.trim(),
-      plan: 'free',
-      createdAt: new Date(),
-    };
+  const nuovoUtente = {
+    nome: nome.trim(),
+    cognome: cognome.trim(),
+    email: emailPulita,
+    passwordHash,
+    telefono: telefono.trim(),
+    plan: 'free',
+    profileImageUrl: '',
+    createdAt: new Date(),
+  };
+
 
     await db.collection('utenti').insertOne(nuovoUtente);
 

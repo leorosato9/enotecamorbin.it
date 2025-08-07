@@ -357,6 +357,33 @@ textarea {
   margin-left: 0;
 }
 
+.greetingText {
+  font-size: 1.3rem;
+  font-weight: 300;
+  color: #333;
+}
+
+.greetingName {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.userGreeting {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* spazio fra testo e immagine */
+}
+
+.avatar-circle {
+  margin-left: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
 .leftContainer {
   display: flex;
   align-items: center;
@@ -392,8 +419,25 @@ textarea {
   margin-bottom: 10px;
 }
 
+
+
+.avatar-uploader {
+  margin-top: 5rem;
+}
+
+
+.headerSocialLinksLeft {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Cambiato da flex-end a flex-start */
+  gap: 25px;
+  margin-left: 0; /* Rimosso l'effetto "spingi a destra" */
+  padding-left: 6vw; /* Aggiunto padding a sinistra invece di destra */
+}
+
+
 /* Header Social Links */
-.headerSocialLinks {
+.headerSocialLinksRight {
   display: flex; /* Usa Flexbox per gestire il layout */
   align-items: center; /* Centra verticalmente le icone */
   justify-content: flex-end; /* Allinea le icone completamente a destra */
@@ -1941,5 +1985,17 @@ textarea {
     margin: 1rem 0; /* Aggiungi un margine superiore e inferiore */
     gap: 1rem; /* Spaziatura tra le icone */
     padding-right: 0
+  }
+
+  /* Nasconde “Ciao, Nome” su schermi piccoli */
+
+  .userGreeting .greetingText,
+  .userGreeting .greetingName {
+    display: none;
+  }
+
+  .avatar-circle {
+    width: 64px;
+    height: 64px;
   }
 }
