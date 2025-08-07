@@ -56,20 +56,6 @@ export function useUserPage({ initialActivities, currentUserEmail }) {
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
   const [errorInvites, setErrorInvites] = useState(null);
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      setIsLoadingInvites(true);
-      fetch('/api/invite', { credentials: 'include' })
-        .then((res) => res.json())
-        .then((data) => setPendingInvites(data.inviti || []))
-        .catch((err) => {
-          console.error('Errore caricamento inviti:', err);
-          setErrorInvites('Errore nel caricamento degli inviti.');
-        })
-        .finally(() => setIsLoadingInvites(false));
-    }
-  }, [status]);
-
   const handleInviteResponse = async (inviteId, action) => {
     try {
       const response = await fetch('/api/invite/respond', {
