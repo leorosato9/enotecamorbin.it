@@ -1,10 +1,9 @@
 export default function Grazie() {
   return (
     <div className="scheda">
-      <h1>Grazie per esserti aggiornato al Piano Plus!</h1>
+      <h1>Grazie!</h1>
       <p>
-        Il tuo abbonamento è ora attivo. Presto riceverai via email la fattura con
-        tutti i dettagli.
+        Il tuo abbonamento al piano plus è attivo, e da ora potrai accedere a tutte le funzionalità che ti spettano.
       </p>
       <a href="/">
         Torna alla dashboard

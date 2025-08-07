@@ -88,7 +88,7 @@ export default function LoginPage() {
         <title>{mode === 'register' ? 'Registrati' : 'Accedi'} | Enoteca Morbin</title>
       </Head>
 
-      <div className="scheda" style={{ margin: '2rem auto', maxWidth: '400px' }}>
+      <div className="schedaLogin" style={{ margin: '2rem auto', maxWidth: '400px' }}>
         <div className="loginmodalContent">
           <img src="/logo.webp" alt="Logo" className="loginmodalLogo" />
 
