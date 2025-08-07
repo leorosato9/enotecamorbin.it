@@ -82,14 +82,13 @@ export default function Header({ profileImageUrl }) {
             />
           </a>
         ) : (
-          <button
-            onClick={() => signIn()}
-            className="socialLink"
-            aria-label="Login"
-          >
-            <img src="/user.png" alt="" className="socialIcon" />
-          </button>
-        )}
+        <a href="/user" className="socialLink" aria-label="Vai al profilo">
+          <img
+            src="/usernotauth.png"
+            alt="Profilo utente"
+            className="socialIcon"
+          />
+        </a>        )}
       </div>
     </header>
   )
