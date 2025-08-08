@@ -61,13 +61,17 @@ export async function getServerSideProps(context) {
 
   try {
     const { id } = context.params;
-    if (!ObjectId.isValid(id)) {
-      return { notFound: true };
-    }
 
     const { db } = await connectToDatabase();
     
-    const attivita = await db.collection('attività').findOne({ _id: new ObjectId(id) });
+    let attivita;
+    if (ObjectId.isValid(id)) {
+      // Compatibilità con vecchie attività
+      attivita = await db.collection('attività').findOne({ _id: new ObjectId(id) });
+    } else {
+      // Nuove attività con nanoid
+      attivita = await db.collection('attività').findOne({ _id: id });
+    }
 
     if (!attivita) {
       return { notFound: true };
@@ -85,16 +89,8 @@ export async function getServerSideProps(context) {
     let carteVini = [];
 
     if (carteViniIds.length > 0) {
-      const objectIds = carteViniIds.map(id => {
-        try {
-          return new ObjectId(id);
-        } catch {
-          return id; 
-        }
-      });
-      
-      carteVini = await db.collection('cartavini').find({ 
-        _id: { $in: objectIds } 
+      carteVini = await db.collection('cartavini').find({
+        _id: { $in: carteViniIds }
       }).sort({ createdAt: -1 }).toArray();
     }
 

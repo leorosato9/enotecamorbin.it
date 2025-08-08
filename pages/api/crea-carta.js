@@ -15,7 +15,6 @@ import { ObjectId } from 'mongodb';
 export const config = { api: { bodyParser: false } };
 
 async function handler(req, res, session) {
-  console.log('[crea-carta] START');
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -37,23 +36,18 @@ async function handler(req, res, session) {
       const vd = extractAndValidateData({ fields, files });
       activityData = { nome: vd.nome, regione: vd.regione, provincia: vd.provincia, comune: vd.comune, fascia: vd.fascia };
       activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
-      console.log('[crea-carta] Nuova attività', activityId);
     } else {
       activityId = actIdField;
       const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
       if (!found) return res.status(404).json({ success: false, message: 'Attività non valida' });
       activityData = found;
-      console.log('[crea-carta] Attività esistente', activityId);
     }
 
     const publicUrl = await supabaseUpload(filepath, mimetype);
-    console.log('[crea-carta] File URL', publicUrl);
 
     const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath: filepath, fileType: mimetype });
-    console.log('[crea-carta] Testo estratto', menuText.length);
 
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
-    console.log('[crea-carta] Bottiglie selezionate', topSelections.length);
 
     const promises = topSelections.map((v, i) => {
       const nomeVino = v.metadata.nomeVino || v.metadata.nome_completo || '';
@@ -61,7 +55,6 @@ async function handler(req, res, session) {
       const denominazione = v.metadata.denominazione || nomeVino;
       const annata = v.metadata.annata ? ` ${v.metadata.annata}` : '';
       const single = `- ${produttore} – ${denominazione}${annata}`;
-      console.log(`[crea-carta] Richiesta expl [${i}]`, denominazione);
       return generateWineExplanations({
         nome: activityData.nome,
         regione: activityData.regione,
@@ -75,7 +68,6 @@ async function handler(req, res, session) {
     });
 
     const spiegazioni = await Promise.all(promises);
-    console.log('[crea-carta] Spiegazioni ottenute', spiegazioni.length);
 
     const cartaId = await saveCartaToMongo({
       userId,
@@ -93,7 +85,6 @@ async function handler(req, res, session) {
       menuEmbedding,
       userPlan
     });
-    console.log('[crea-carta] Carta salvata', cartaId);
     return res.status(201).json({ success: true, id: cartaId });
 
   } catch (err) {

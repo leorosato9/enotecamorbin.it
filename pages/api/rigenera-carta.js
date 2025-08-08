@@ -4,7 +4,6 @@ import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI.
 import { updateCartaInMongo } from '../../lib/services/carta/mongoUpload.js';
 
 async function handler(req, res, session) {
-  console.log('[rigenera-carta] START');
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
@@ -26,13 +25,6 @@ async function handler(req, res, session) {
     .map((v, i) => selectedWines.includes(v.id) ? spiegazioni[i] : null)
     .filter(x => x);
 
-  console.log(
-    '[rigenera-carta]',
-    kept.length,
-    'kept,',
-    toReplace.length,
-    'to replace'
-  );
   if (!toReplace.length) {
     return res.status(200).json({ success: true, risultati, spiegazioni });
   }
@@ -45,10 +37,6 @@ async function handler(req, res, session) {
     allCurrentWines: risultati,
     replacementsNeeded: toReplace.length
   });
-  console.log(
-    '[rigenera-carta] Sostituiti trovati',
-    topSelections.length
-  );
 
   const elencoArray = topSelections.map((v, i) => {
     const nomeVino = v.metadata.nomeVino || v.metadata.nome_completo || '';
@@ -58,19 +46,11 @@ async function handler(req, res, session) {
     const line = `- ${produttore} – ${denominazione}${annata}`;
 
     const oldLabel = toReplace[i].metadata?.denominazione || toReplace[i].id;
-    console.log(`[rigenera-carta] replacing “${oldLabel}” → “${line}”`);
 
     return line;
   });
 
-  console.log(
-    '[rigenera-carta] Prompt expl per',
-    elencoArray.length,
-    'bottiglie'
-  );
-
   const newExplPromises = elencoArray.map((singleLine, idx) => {
-    console.log(`[rigenera-carta] Richiesta expl [${idx}]`, singleLine);
     return generateWineExplanations({
       nome: ristorante.nome,
       regione: ristorante.regione,
@@ -88,10 +68,6 @@ async function handler(req, res, session) {
   });
 
   const nuove = await Promise.all(newExplPromises);
-  console.log(
-    '[rigenera-carta] Spiegazioni nuove ottenute',
-    nuove.length
-  );
 
   // Ricomponi i risultati finali
   const finalRis = [...kept, ...topSelections];
@@ -102,7 +78,6 @@ async function handler(req, res, session) {
     updatedRisultati: finalRis,
     updatedSpiegazioni: finalEx
   });
-  console.log('[rigenera-carta] Mongo aggiornato', cartaId);
 
   return res
     .status(200)

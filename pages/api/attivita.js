@@ -1,6 +1,7 @@
 import { withAuth } from '../../lib/auth/withAuth';
 import { connectToDatabase } from '../../lib/mongodb';
 import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter';
+import { nanoid } from 'nanoid'; // 👈 importa nanoid
 
 async function attivitaHandler(req, res, session) {
   if (req.method !== 'POST') {
@@ -21,7 +22,10 @@ async function attivitaHandler(req, res, session) {
     
     console.log(`[API /api/attivita] Controllo limite superato. Procedo con la creazione.`);
 
+    const shortId = nanoid(8);
+
     const nuovaAttivita = {
+      _id: shortId,
       userEmail: session.user.email.toLowerCase(),
       userId: userId,
       nome: nome.trim(),
@@ -31,8 +35,10 @@ async function attivitaHandler(req, res, session) {
       fascia,
       createdAt: new Date(),
     };
-    const result = await db.collection('attività').insertOne(nuovaAttivita);
-    return res.status(201).json({ success: true, message: 'Attività salvata', id: result.insertedId });
+
+    await db.collection('attività').insertOne(nuovaAttivita);
+
+    return res.status(201).json({ success: true, message: 'Attività salvata', id: shortId });
     
   } catch (err) {
     if (err.statusCode === 403) {
