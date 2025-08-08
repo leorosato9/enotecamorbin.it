@@ -39,7 +39,7 @@ function ProfileCard({ userData, onSignOut }) {
             })
           : ''}
       </p>
-      <button onClick={onSignOut} className="customBuyButton slugButton">
+      <button onClick={onSignOut} className="submitButton customBuyButton slugButton">
         Esci
       </button>
     </div>

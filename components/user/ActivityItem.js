@@ -90,7 +90,7 @@ export default function ActivityItem({ activity, currentUserEmail, emailToName }
                     e.preventDefault();
                     handleInvite();
                   }}
-                  className="customBuyButton slugButton"
+                  className="submitButton customBuyButton slugButton"
                   disabled={isInviting}
                 >
                   {isInviting ? 'Invio...' : 'Invita a collaborare'}

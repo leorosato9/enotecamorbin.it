@@ -107,7 +107,7 @@ export default function ActivityForm({ onSubmit, isSubmitting, error }) {
             </div>
 
             
-            <button type="submit" disabled={shouldDisableForm} className="customBuyButton slugButton">
+            <button type="submit" disabled={shouldDisableForm} className="submitButton customBuyButton slugButton">
               {isSubmitting ? 'Salvataggio…' : 'Aggiungi Attività'}
             </button>
           </>

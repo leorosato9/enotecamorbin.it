@@ -430,7 +430,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: flex-start; /* Cambiato da flex-end a flex-start */
-  gap: 25px;
+  gap: 15px;
   margin-left: 0; /* Rimosso l'effetto "spingi a destra" */
   padding-left: 6vw; /* Aggiunto padding a sinistra invece di destra */
 }
@@ -442,8 +442,7 @@ textarea {
   align-items: center; /* Centra verticalmente le icone */
   justify-content: flex-end; /* Allinea le icone completamente a destra */
   gap: 25px; /* Spaziatura tra le icone */
-  margin-left: auto; /* Spinge le icone completamente a destra */
-  padding-right: 6vw; /* Spaziatura a destra rispetto al bordo */
+  margin-right: 1.35rem;
 }
 
 

@@ -31,14 +31,12 @@ export default function Header({ profileImageUrl }) {
 
   return (
     <header className="header">
-      {/* Logo al centro */}
       <div className="logo-container">
         <a href="/">
           <img src="/logo.webp" alt="Enoteca Morbin" className="logo" />
         </a>
       </div>
 
-      {/* Link social a sinistra */}
       <div className="headerSocialLinksLeft">
         <a
           href="https://www.instagram.com/enoteca_morbin"
@@ -60,10 +58,9 @@ export default function Header({ profileImageUrl }) {
         </a>
       </div>
 
-      {/* Area utente a destra */}
       <div className="headerSocialLinksRight">
         {status === 'loading' ? (
-          <span>Loading…</span>
+          <span></span>
         ) : session ? (
           <a
             href="/user"

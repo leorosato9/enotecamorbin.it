@@ -99,7 +99,17 @@ export default function LoginPage() {
                 <button onClick={() => setAuthMethod('email')} className="customBuyButton">
                   {mode === 'register' ? 'Registrati con Email' : 'Accedi con Email'}
                 </button>
-                <button onClick={handleGoogleAuth} className="whiteButton customBuyButton whiteButtonText">
+                <button
+                  onClick={handleGoogleAuth}
+                  className="whiteButton customBuyButton whiteButtonText"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <img src="/google.png" alt="Google" style={{ width: '28px', height: '28px', position:'absolute', left:'14.5%' }} />
                   {mode === 'register' ? 'Registrati con Google' : 'Accedi con Google'}
                 </button>
               </div>
