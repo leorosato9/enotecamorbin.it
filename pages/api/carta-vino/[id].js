@@ -21,27 +21,33 @@ export default async function handler(req, res) {
     return res.status(404).json({ message: "Carta non trovata." });
   }
 
-  // Anche se il record viene trovato subito, inviamo comunque i dati parziali
-  // con lo stato corrente. Il frontend deciderà cosa mostrare.
+  console.log("[API /api/carta-vino/:id] attivitaId nel record:", record.attivitaId);
+  console.log("[API /api/carta-vino/:id] _id record carta:", record._id);
+
 
   const userPlan = record.userPlan || "free";
   const defaultLimit = PLAN_CONFIG[userPlan]?.limits?.regenerationsPerMenu || 0;
 
-  // Header per prevenire la cache del browser, che può causare dati non aggiornati
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
   return res.status(200).json({
-    status: record.status, // Es. 'processing', 'completed', o 'error'
-    ristorante: record.formData, // I dati del form sono qui
+    status: record.status,
+    attivitaId: record.attivitaId ? record.attivitaId.toString() : null, // ✅ aggiunto
+    ristorante: record.formData,
     risultati: record.risultati,
     spiegazioni: record.spiegazioni,
     menuText: record.menuText,
     menuEmbedding: record.menuEmbedding,
     fileUrl: record.fileUrl,
     fileType: record.fileType,
-    regenerationLimit: typeof record.regenerationLimit === 'number' ? record.regenerationLimit : defaultLimit,
-    regenerationCount: typeof record.regenerationCount === 'number' ? record.regenerationCount : 0
-  });
+    regenerationLimit: typeof record.regenerationLimit === 'number'
+      ? record.regenerationLimit
+      : defaultLimit,
+    regenerationCount: typeof record.regenerationCount === 'number'
+      ? record.regenerationCount
+      : 0
+  })
+
 }

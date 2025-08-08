@@ -1,8 +1,17 @@
-export default function TopInfoBoxes({ ristorante, onViewMenu }) {
+import React from 'react'
+import { useRouter } from 'next/router'
 
-  if (!ristorante) {
-    return null;
+export default function TopInfoBoxes({ ristorante, onViewMenu }) {
+  const router = useRouter()
+
+  if (!ristorante) return null
+
+  const handleViewInfo = () => {
+    if (ristorante.attivitaId) {
+      router.push(`/attivita/${ristorante.attivitaId}`);
+    }
   }
+
 
   return (
     <div className="topBoxes">
@@ -12,9 +21,9 @@ export default function TopInfoBoxes({ ristorante, onViewMenu }) {
           <p className="dropZone__sub-text">Il menu del tuo ristorante</p>
         </div>
         <div className="foot">
-          <button 
-            type="button" 
-            className="customBuyButton littleButton" 
+          <button
+            type="button"
+            className="customBuyButton littleButton"
             onClick={onViewMenu}
           >
             Visualizza
@@ -28,15 +37,15 @@ export default function TopInfoBoxes({ ristorante, onViewMenu }) {
           <p className="dropZone__sub-text">Informazioni della tua attività</p>
         </div>
         <div className="foot">
-          <button 
-            type="button" 
-            className="customBuyButton littleButton" 
-            onClick={() => { alert('Funzionalità da implementare'); }}
+          <button
+            type="button"
+            className="customBuyButton littleButton"
+            onClick={handleViewInfo}
           >
             Visualizza
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }

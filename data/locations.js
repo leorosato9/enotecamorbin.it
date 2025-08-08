@@ -1,5 +1,3 @@
-// Questo file è generato automaticamente da scripts/generateLocations.js
-// Non editare a mano.
 
 export const regioni = [
   "Abruzzo",

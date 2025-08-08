@@ -3,10 +3,13 @@ import React from 'react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+
 import LoadingScreen from '../../components/ui/LoadingScreen';
 import PreviewOverlay from '../../components/ui/PreviewOverlay';
-import VinoCard from '../../components/results/VinoCard';
-import TopInfoBoxes from '../../components/results/TopInfoBoxes';
+
+import VinoCard from '../../components/carta-vino/VinoCard';
+import TopInfoBoxes from '../../components/carta-vino/TopInfoBoxes';
+
 import useResults from '../../hooks/useResults';
 
 export default function Risultati() {
@@ -31,7 +34,7 @@ export default function Risultati() {
   return (
     <>
       <Head>
-        <title>Carta dei vini: {ristorante ? ristorante.nome : 'Caricamento...'}</title>
+        <title>Carta dei vini generata</title>
       </Head>
 
       <Header />

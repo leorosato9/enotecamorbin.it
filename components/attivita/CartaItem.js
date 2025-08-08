@@ -16,7 +16,7 @@ function CartaItem({ carta }) {
 
   return (
     <div className="carta-vini-item">
-      <Link href={`/results/${carta._id}`} legacyBehavior>
+      <Link href={`/carta-vino/${carta._id}`} legacyBehavior>
         <a>
           <span>Carta generata il:</span>
           <strong>{dataFormattata}</strong>

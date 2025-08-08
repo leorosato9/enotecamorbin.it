@@ -30,21 +30,19 @@ export default function useResults() {
     setLoading(true);
     setError('');
 
-    fetch(`/api/results/${Array.isArray(id) ? id[0] : id}`)
+    fetch(`/api/carta-vino/${Array.isArray(id) ? id[0] : id}`)
       .then(res => {
         if (!res.ok) return Promise.reject(res);
         return res.json();
       })
       .then(fetchedData => {
-        // --- QUESTA È LA LOGICA RIPRISTINATA CHE FUNZIONAVA ---
-        // Ricostruiamo l'oggetto ristorante dai campi al livello principale dei dati ricevuti.
-        // Assumiamo che la tua API stia restituendo un oggetto con `nomeLocale`, `comune`, etc.
-        setRistorante({ 
-            nome: fetchedData.ristorante?.nome, 
-            comune: fetchedData.ristorante?.comune, 
-            provincia: fetchedData.ristorante?.provincia 
+        setRistorante({
+          nome: fetchedData.ristorante?.nome,
+          comune: fetchedData.ristorante?.comune,
+          provincia: fetchedData.ristorante?.provincia,
+          attivitaId: fetchedData.attivitaId
         });
-        // -------------------------------------------------------------
+
         
         setRisultati(fetchedData.risultati || []);
         setFileUrl(fetchedData.fileUrl || null);
@@ -52,7 +50,6 @@ export default function useResults() {
         setMenuText(fetchedData.menuText || '');
         setMenuEmbedding(fetchedData.menuEmbedding || []);
         
-        // Manteniamo la correzione per i contatori delle rigenerazioni
         setRegenerationLimit(fetchedData.regenerationLimit);
         setRegenerationCount(fetchedData.regenerationCount);
         
@@ -79,7 +76,6 @@ export default function useResults() {
       });
   }, [id, isReady]);
 
-  // Il resto del file è identico e non richiede modifiche...
   useEffect(() => {
     if (risultati && risultati.length > 0) {
       setOpenStates(new Array(risultati.length).fill(false));

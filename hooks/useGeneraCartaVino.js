@@ -35,7 +35,7 @@ export default function useGeneraCartaVino() {
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Errore nel finalizzare la richiesta.');
-          router.push(`/results/${data.resultsId}`); // Corretto per usare data.resultsId
+          router.push(`/carta-vino/${data.resultsId}`);
         } catch (err) {
           form.setError(err.message);
           form.setLoading(false);
@@ -82,7 +82,7 @@ export default function useGeneraCartaVino() {
         const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || `Errore ${res.status}`);
-        router.push(`/results/${data.id}`);
+        router.push(`/carta-vino/${data.id}`);
       } catch (err) {
         form.setError(err.message);
         form.setLoading(false);

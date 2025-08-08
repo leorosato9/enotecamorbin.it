@@ -38,7 +38,7 @@ export function useSubmission({
       if (!res.ok || !data.success) {
         throw new Error(data.message || 'Errore durante la creazione.');
       }
-      router.push(`/results/${data.id}`);
+      router.push(`/carta-vino/${data.id}`);
     } catch (err) {
       setError('Errore: ' + err.message);
       setLoading(false);
