@@ -55,7 +55,6 @@ async function handler(req, res, session) {
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
     console.log('[crea-carta] Bottiglie selezionate', topSelections.length);
 
-    // generazione parallela spiegazioni
     const promises = topSelections.map((v, i) => {
       const nomeVino = v.metadata.nomeVino || v.metadata.nome_completo || '';
       const produttore = v.metadata.produttore || '';
