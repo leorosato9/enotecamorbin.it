@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { connectToDatabase } from '../../lib/mongodb';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import DegustazioneCard from '../../components/DegustazioneCard';
-import { loadGoogleAnalytics } from '../../components/gtag';
+import Header from '../../components/layout/Header';
+import Footer from '../../components/layout/Footer';
+import { loadGoogleAnalytics } from '../../lib/gtag';
 import React from 'react';
 import { ObjectId } from 'mongodb';
 import Link from 'next/link';
@@ -75,7 +74,6 @@ export async function getServerSideProps(context) {
     link: deg.link || null,
   }));
 
-  // Prepara i dati per la degustazione corrente
   let bottiglie = [];
   if (degustazione.bottiglie && degustazione.bottiglie.length > 0) {
     const bottiglieObjectIds = degustazione.bottiglie.map((id) => new ObjectId(id));
@@ -360,21 +358,6 @@ export default function DettaglioDegustazione({ degustazione, altreDegustazioni,
             )}
           </h2>
         </div>
-
-        {/* Lista delle degustazioni */}
-        {altreDegustazioni && altreDegustazioni.length > 0 ? (
-          <div className="degustazioniList">
-            {altreDegustazioni.map((deg) => (
-              <DegustazioneCard key={deg._id} degustazione={deg} isPast={false} />
-            ))}
-          </div>
-        ) : (
-          <div className="degustazioniList">
-            {degustazioniPassate.map((deg) => (
-              <DegustazioneCard key={deg._id} degustazione={deg} isPast={true} />
-            ))}
-          </div>
-        )}
       </div>
 
       <Footer />

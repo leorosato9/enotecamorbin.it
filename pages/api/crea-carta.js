@@ -1,100 +1,96 @@
+// pages/api/crea-carta.js
 import { withAuth } from '../../lib/auth/withAuth';
+import { connectToDatabase } from '../../lib/mongodb';
+import { parseForm } from '../../lib/services/carta/formParser';
+import { extractAndValidateData } from '../../lib/services/carta/dataExtractor';
+import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter';
+import { saveAttivita } from '../../lib/services/attivita/saveAttivita';
+import { processMenuFile } from '../../lib/services/carta/textProcessor';
+import { processPinecone } from '../../lib/services/carta/wineSelection';
+import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI';
+import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload';
+import { supabaseUpload } from '../../lib/services/carta/supabaseUpload';
 import { ObjectId } from 'mongodb';
 
-import { PLAN_CONFIG } from '../../lib/config/plans.js';
+export const config = { api: { bodyParser: false } };
 
-import { connectToDatabase } from '../../lib/mongodb'; 
-
-import { checkRestaurantLimit } from '../../lib/services/limits/planLimiter.js';
-
-import { parseForm } from '../../lib/services/carta/formParser.js';
-import { extractAndValidateData } from '../../lib/services/carta/dataExtractor.js';
-import { processMenuFile } from '../../lib/services/carta/textProcessor.js';
-import { processPinecone } from '../../lib/services/carta/wineSelection.js';
-import { generateWineExplanations } from '../../lib/services/carta/promptOpenAI.js';
-import { supabaseUpload } from '../../lib/services/carta/supabaseUpload.js';
-import { saveCartaToMongo } from '../../lib/services/carta/mongoUpload.js';
-import { saveAttivita } from '../../lib/services/attivita/saveAttivita.js';
-
-async function creaCartaHandler(req, res, session) {
+async function handler(req, res, session) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ success: false, message: 'Method not allowed' });
+  }
   try {
-    const userPlan = session.user.plan || 'free';
     const userId = session.user.id;
+    const userPlan = session.user.plan || 'free';
     const { db } = await connectToDatabase();
-    
+
     const { fields, files } = await parseForm(req);
-    const existingActivityId = fields.activityId ? (Array.isArray(fields.activityId) ? fields.activityId[0] : fields.activityId) : null;
+    const upload = Array.isArray(files.file) ? files.file[0] : files.file;
+    if (!upload?.filepath) throw new Error('File mancante');
+    const { filepath, mimetype } = upload;
 
-    let attivitaId;
-    let attivitaData;
-
-    if (!existingActivityId || existingActivityId === 'new') {
-      console.log("Creazione nuova attività: eseguo il controllo dei limiti...");
-      
+    let activityData, activityId;
+    const actIdField = fields.activityId?.[0];
+    if (!actIdField || actIdField === 'new') {
       await checkRestaurantLimit(db, userId, userPlan);
-      
-      console.log("Controllo superato. Procedo con la creazione.");
-      attivitaData = extractAndValidateData({ fields, files });
-      attivitaId = await saveAttivita({ userId, userEmail: session.user.email, ...attivitaData });
-      
+      const vd = extractAndValidateData({ fields, files });
+      activityData = { nome: vd.nome, regione: vd.regione, provincia: vd.provincia, comune: vd.comune, fascia: vd.fascia };
+      activityId = await saveAttivita({ userId, userEmail: session.user.email, ...activityData });
     } else {
-      console.log(`Utilizzo attività esistente: ${existingActivityId}. Salto il controllo.`);
-      attivitaId = existingActivityId;
-      const loadedActivity = await db.collection('attività').findOne({ 
-        _id: new ObjectId(attivitaId), 
-        userId: userId 
-      });
-
-      if (!loadedActivity) {
-        return res.status(404).json({ success: false, message: "Attività non trovata o non autorizzata." });
-      }
-      
-      attivitaData = {
-        nome: loadedActivity.nome,
-        regione: loadedActivity.regione,
-        provincia: loadedActivity.provincia,
-        comune: loadedActivity.comune,
-        fascia: loadedActivity.fascia,
-      };
+      activityId = actIdField;
+      const found = await db.collection('attività').findOne({ _id: new ObjectId(activityId), userId });
+      if (!found) return res.status(404).json({ success: false, message: 'Attività non valida' });
+      activityData = found;
     }
 
-    const { filePath, fileType } = extractAndValidateData({ fields, files });
-    const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath, fileType });
+    const publicUrl = await supabaseUpload(filepath, mimetype);
+
+    const { text: menuText, embedding: menuEmbedding } = await processMenuFile({ filePath: filepath, fileType: mimetype });
+
     const { elencoBottiglie, topSelections } = await processPinecone({ menuEmbedding, selectK: 12 });
-    const spiegazioniJson = await generateWineExplanations({ ...attivitaData, menuText, elencoBottiglie });
-    const publicUrl = await supabaseUpload(filePath, files.file[0].mimetype);
+
+    const promises = topSelections.map((v, i) => {
+      const nomeVino = v.metadata.nomeVino || v.metadata.nome_completo || '';
+      const produttore = v.metadata.produttore || '';
+      const denominazione = v.metadata.denominazione || nomeVino;
+      const annata = v.metadata.annata ? ` ${v.metadata.annata}` : '';
+      const single = `- ${produttore} – ${denominazione}${annata}`;
+      return generateWineExplanations({
+        nome: activityData.nome,
+        regione: activityData.regione,
+        provincia: activityData.provincia,
+        comune: activityData.comune,
+        fascia: activityData.fascia,
+        menuText,
+        elencoBottiglie: single
+      })
+      .then(arr => arr[0] || { name: `${produttore} – ${denominazione}`, bullets: [], explanation: [] });
+    });
+
+    const spiegazioni = await Promise.all(promises);
 
     const cartaId = await saveCartaToMongo({
-      userId: userId,
+      userId,
       userEmail: session.user.email,
-      attivitaId: attivitaId,
-      ...attivitaData,
+      attivitaId: activityId,
+      nomeLocale: activityData.nome,
+      regione: activityData.regione,
+      provincia: activityData.provincia,
+      comune: activityData.comune,
+      fascia: activityData.fascia,
       risultati: topSelections,
-      spiegazioniJson,
+      spiegazioniJson: spiegazioni,
       fileUrl: publicUrl,
       menuText,
       menuEmbedding,
       userPlan
     });
-
-    return res.status(201).json({ success: true, id: cartaId, fileUrl: publicUrl });
+    return res.status(201).json({ success: true, id: cartaId });
 
   } catch (err) {
-    if (err.statusCode === 403) {
-      console.log('Limite raggiunto, invio risposta "soft error" al client.');
-      return res.status(200).json({ success: false, message: err.message });
-    }
-    
-    console.error('[crea-carta] Errore:', err.message);
-    return res.status(err.statusCode || 500).json({ success: false, message: err.message || 'Errore interno del server' });
+    console.error('[crea-carta] ERRORE:', err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 }
 
-export default withAuth(async (req, res, session) => {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).json({ success: false, message: `Method ${req.method} Not Allowed` });
-  } else {
-    await creaCartaHandler(req, res, session);
-  }
-});
+export default withAuth(handler);

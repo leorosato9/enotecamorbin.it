@@ -1,61 +1,68 @@
 import Head from 'next/head';
 import React from 'react';
+import { useSession } from 'next-auth/react';
 
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-
 import LoadingScreen from '../components/ui/LoadingScreen';
 import PreviewOverlay from '../components/ui/PreviewOverlay';
-
 import FileUpload from '../components/genera-carta-vino/FileUpload';
 import RestaurantForm from '../components/genera-carta-vino/RestaurantForm';
-
 import useGeneraCartaVino from '../hooks/useGeneraCartaVino';
 
 export default function GeneraCartaVino() {
+  const { status } = useSession();
   const {
     nome, setNome,
     fascia, setFascia,
     filePdf,
     loading,
     error,
-    showDetails,
-    showPreview,
+    showDetails, setShowDetails,
+    showPreview, setShowPreview,
     fileURL,
-    setShowDetails,
+
     handleFileChange,
-    handleViewMenu,
     handleChangeMenu,
-    handleFormSubmit,
+    handleViewMenu,
 
     regione, setRegione,
-    provincia, setProvincia, provinceList,
-    comune, setComune, comuniList,
+    provincia, setProvincia,
+    comune, setComune,
+    provinceList, comuniList,
 
-    authStatus,
     userActivities,
     isLoadingActivities,
     onActivitySelect,
-    modalState,
-    setModalState,
-    handleLoginSuccess,
-    limitError,
+    restaurantLimitError,
+    weeklyLimitError,
+    activityId,
+
+    handleFormSubmit
   } = useGeneraCartaVino();
+
+  const isCreatingNew   = !userActivities.some(a => a.nome === nome);
+  const errorForForm    = isCreatingNew ? restaurantLimitError : weeklyLimitError;
+  const isActionBlocked = !!errorForForm;
 
   if (loading) return <LoadingScreen />;
 
   return (
-    <div>
+    <>
       <Head>
-        <title>Enoteca Morbin | Abbina i vini al tuo menù</title>
+        <title>Enoteca Morbin | Genera Carta Vini</title>
       </Head>
+
       <Header />
 
-      <div className={`scheda ${showDetails ? 'scheda--compact' : ''}`}>
+      <main className={`scheda ${showDetails ? 'scheda--compact' : ''}`}>
         <h2 className="centralTitle">Carica il tuo menù</h2>
-        <h3 className="centralTitle">Carica o scatta una foto al tuo menù</h3>
+        <h3 className="centralTitle">PDF o foto del menù</h3>
+
+      {error && <p className="error-message-box">{error}</p>}
 
         <form onSubmit={handleFormSubmit}>
+          
           <FileUpload
             file={filePdf}
             onFileChange={handleFileChange}
@@ -64,12 +71,11 @@ export default function GeneraCartaVino() {
             onChangeMenu={handleChangeMenu}
             loading={loading}
           />
-
+          
           {!showDetails && (
             <button
               type="button"
               onClick={() => setShowDetails(true)}
-              disabled={!filePdf}
               className="customBuyButton spaceButton"
             >
               Continua
@@ -86,39 +92,34 @@ export default function GeneraCartaVino() {
                 fascia={fascia} setFascia={setFascia}
                 provinceList={provinceList}
                 comuniList={comuniList}
-                loading={loading}
-                authStatus={authStatus}
                 userActivities={userActivities}
-                isLoadingActivities={isLoadingActivities}
                 onActivitySelect={onActivitySelect}
-                limitError={limitError}
-                modalState={modalState}
-                onCloseModal={() => setModalState({ isOpen: false, initialView: 'register' })}
-                onOpenLoginModal={() => setModalState({ isOpen: true, initialView: 'login' })}
-                onLoginSuccess={handleLoginSuccess}
+                loading={loading}
+                error={errorForForm}
               />
-              <button
-                type="submit"
-                disabled={loading || !!limitError}
-                className="customBuyButton submitButton"
-              >
-                Genera la tua Carta Vini
-              </button>
+
+              {!isActionBlocked && (
+                <button
+                  type="submit"
+                  className="customBuyButton submitButton"
+                  disabled={loading}
+                >
+                  Genera la tua Carta Vini
+                </button>
+              )}
             </>
           )}
         </form>
 
-        {error && !limitError && <p className="error">{error}</p>}
-      </div>
-
-      <PreviewOverlay
-        show={showPreview}
-        fileUrl={fileURL}
-        fileType={filePdf?.type}
-        onClose={() => setShowPreview(false)}
-      />
+        <PreviewOverlay
+          show={showPreview}
+          fileUrl={fileURL}
+          fileType={filePdf?.type}
+          onClose={() => setShowPreview(false)}
+        />
+      </main>
 
       <Footer />
-    </div>
+    </>
   );
 }

@@ -1,109 +1,173 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 import { useFormState } from './genera-carta-vino/useFormState';
 import { useLocationLogic } from './genera-carta-vino/useLocationLogic';
-import { useSubmission } from './genera-carta-vino/useSubmission';
-
-// 1. Importiamo la nostra configurazione dei piani
 import { PLAN_CONFIG } from '../lib/config/plans';
 
+const STAGING_ID_KEY = 'pendingMenuStagingId';
 
 export default function useGeneraCartaVino() {
-  // Aggiungiamo 'session' per accedere ai dati dell'utente, come il suo piano
-  const { data: session, status, update } = useSession();
-  const formState = useFormState();
-  const locationState = useLocationLogic();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const form = useFormState();
+  const location = useLocationLogic();
 
-  const [modalState, setModalState] = useState({ isOpen: false, initialView: 'register' });
-  
   const [userActivities, setUserActivities] = useState([]);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+  const [isLoadingActivities, setLoadingActivities] = useState(false);
+  const [restaurantLimitError, setRestaurantLimitError] = useState(null);
+  const [weeklyLimitError, setWeeklyLimitError] = useState(null);
+  const [selectedActivityId, setSelectedActivityId] = useState('new');
 
-  // 2. Aggiungiamo lo stato per il messaggio di errore del limite
-  const [limitError, setLimitError] = useState(null);
+  // Hook che si attiva dopo il login per completare la richiesta
+  useEffect(() => {
+    const claimStagedRequest = async () => {
+      const stagedId = sessionStorage.getItem(STAGING_ID_KEY);
+      if (status === 'authenticated' && stagedId) {
+        form.setLoading(true);
+        sessionStorage.removeItem(STAGING_ID_KEY);
+        try {
+          const res = await fetch('/api/claim-menu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stagingId: stagedId }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Errore nel finalizzare la richiesta.');
+          router.push(`/carta-vino/${data.resultsId}`);
+        } catch (err) {
+          form.setError(err.message);
+          form.setLoading(false);
+        }
+      }
+    };
 
+    // --- MODIFICA CHIAVE ---
+    // Usiamo router.isReady per essere sicuri che il router sia pronto
+    if (router.isReady && status) {
+        claimStagedRequest();
+    }
+  }, [status, router, form]); // Rimuoviamo 'isReady' e lasciamo 'router' che lo contiene
+
+
+  // Logica di invio unificata
+  const handleFormSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!form.filePdf) {
+      form.setError('Devi caricare un menù prima di procedere.');
+      return;
+    }
+
+    form.setLoading(true);
+    form.setError('');
+
+    const startTime = new Date().toISOString();
+    console.log("Tempo di avvio:", startTime);
+
+    const formData = new FormData();
+    formData.append('startTime', startTime);
+    formData.append('file', form.filePdf);
+    formData.append('nome', form.nome);
+    formData.append('regione', location.regione);
+    formData.append('provincia', location.provincia);
+    formData.append('comune', location.comune);
+    formData.append('fascia', form.fascia);
+    formData.append('activityId', selectedActivityId);
+    
+    if (status === 'authenticated') {
+
+      
+      try {
+        const res = await fetch('/api/crea-carta', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || `Errore ${res.status}`);
+        router.push(`/carta-vino/${data.id}`);
+      } catch (err) {
+        form.setError(err.message);
+        form.setLoading(false);
+      }
+
+    } else if (status === 'unauthenticated') {
+      try {
+        const res = await fetch('/api/stage-menu', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        sessionStorage.setItem(STAGING_ID_KEY, data.stagingId);
+        signIn();
+      } catch (err) {
+        form.setError(`Errore: ${err.message}`);
+        form.setLoading(false);
+      }
+    } else {
+        form.setLoading(false);
+    }
+  }, [status, form, location, router, selectedActivityId]);
+
+  
+  // Il resto dell'hook rimane invariato
   useEffect(() => {
     if (status === 'authenticated') {
-      setIsLoadingActivities(true);
-      fetch('/api/user/activities')
-        .then(res => res.json())
-        .then(data => setUserActivities(data.activities || []))
-        .catch(err => console.error("Failed to fetch user's activities", err))
-        .finally(() => setIsLoadingActivities(false));
-    } else {
-      setUserActivities([]);
+      setLoadingActivities(true);
+      fetch('/api/user/activities').then(r => r.json()).then(d => setUserActivities(d.activities || [])).finally(() => setLoadingActivities(false));
+      fetch('/api/user/carta-allowance').then(r => r.json()).then(d => setWeeklyLimitError(d.canCreateMenu ? null : d.message)).catch(() => setWeeklyLimitError(null));
     }
   }, [status]);
-  
-  // --- NUOVO useEffect PER CONTROLLARE I LIMITI ---
+
   useEffect(() => {
-    // Eseguiamo il controllo solo se l'utente è autenticato e abbiamo finito di caricare le sue attività
     if (status === 'authenticated' && !isLoadingActivities) {
-      const userPlan = session?.user?.plan || 'free';
-      const restaurantLimit = PLAN_CONFIG[userPlan]?.limits.restaurants;
-
-      // Se l'utente è su un piano con un limite numerico e lo ha raggiunto...
-      if (typeof restaurantLimit === 'number' && userActivities.length >= restaurantLimit) {
-        // ...impostiamo il messaggio di errore.
-        setLimitError(`Hai raggiunto il limite di ${restaurantLimit} ristoranti per il piano ${PLAN_CONFIG[userPlan].name}. Fai l'upgrade a Plus!`);
-      } else {
-        // Altrimenti, ci assicuriamo che non ci sia nessun messaggio di errore.
-        setLimitError(null);
-      }
+      const plan = session?.user?.plan || 'free';
+      const max  = PLAN_CONFIG[plan]?.limits.restaurants;
+      setRestaurantLimitError(userActivities.length >= max ? `Limite di ${max} attività raggiunto.` : null);
     }
-  }, [status, userActivities, isLoadingActivities, session]); // Questo effetto si attiva quando i dati cambiano
+  }, [status, userActivities, isLoadingActivities, session]);
 
-
-  const { setNome, setFascia } = formState;
-  const { setRegione, setProvincia, setComune } = locationState;
-
-  const onActivitySelect = useCallback((activity) => {
+  const onActivitySelect = useCallback(activity => {
     if (activity) {
-      setNome(activity.nome);
-      setRegione(activity.regione);
-      setFascia(activity.fascia || '');
-      setTimeout(() => {
-        setProvincia(activity.provincia);
-        setTimeout(() => setComune(activity.comune), 0);
-      }, 0);
+      setSelectedActivityId(activity._id);
+      form.setNome(activity.nome);
+      location.setRegione(activity.regione);
+      location.setProvincia(activity.provincia);
+      location.setComune(activity.comune);
+      form.setFascia(activity.fascia || '');
     } else {
-      setNome('');
-      setRegione('');
-      setFascia('');
+      setSelectedActivityId('new');
+      form.setNome('');
+      location.setRegione('');
+      location.setProvincia('');
+      location.setComune('');
+      form.setFascia('');
     }
-  }, [setNome, setRegione, setFascia, setProvincia, setComune]);
-
-  const handleLoginSuccess = () => {
-    update();
-  };
-
-  const submissionDependencies = {
-    filePdf: formState.filePdf,
-    nome: formState.nome,
-    regione: locationState.regione,
-    provincia: locationState.provincia,
-    comune: locationState.comune,
-    fascia: formState.fascia,
-    setError: formState.setError,
-    setLoading: formState.setLoading,
-    // Dovrai passare l'activityId selezionato anche qui
-  };
+  }, [form, location]);
   
-  const submissionState = useSubmission(submissionDependencies);
-
+  useEffect(() => {
+    const found = userActivities.find(a => a.nome === form.nome);
+    setSelectedActivityId(found ? found._id : 'new');
+  }, [form.nome, userActivities]);
+  
   return {
-    ...formState,
-    ...locationState,
-    ...submissionState,
-    onActivitySelect,
-    authStatus: status,
+    nome: form.nome, setNome: form.setNome,
+    fascia: form.fascia, setFascia: form.setFascia,
+    filePdf: form.filePdf,
+    loading: form.loading,
+    error: form.error,
+    showDetails: form.showDetails, setShowDetails: form.setShowDetails,
+    showPreview: form.showPreview, setShowPreview: form.setShowPreview,
+    fileURL: form.fileURL,
+    handleFileChange: form.handleFileChange,
+    handleChangeMenu: form.handleChangeMenu,
+    handleViewMenu: form.handleViewMenu,
+    regione: location.regione, setRegione: location.setRegione,
+    provincia: location.provincia, setProvincia: location.setProvincia,
+    comune: location.comune, setComune: location.setComune,
+    provinceList: location.provinceList,
+    comuniList: location.comuniList,
     userActivities,
     isLoadingActivities,
-    modalState,
-    setModalState,
-    handleLoginSuccess,
-    // 3. Esportiamo il nuovo stato di errore così la pagina può passarlo al form
-    limitError, 
+    onActivitySelect,
+    restaurantLimitError,
+    weeklyLimitError,
+    activityId: selectedActivityId,
+    handleFormSubmit,
   };
 }

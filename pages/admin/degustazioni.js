@@ -5,16 +5,14 @@ import Head from 'next/head';
 export async function getServerSideProps() {
   const { db } = await connectToDatabase();
 
-  // Recupera degustazioni
   const degustazioni = await db.collection('degustazioni').find().toArray();
 
-  // Serializza le degustazioni
   const serializedDegustazioni = degustazioni.map((degustazione) => ({
     id: degustazione._id.toString(),
     slug: degustazione.slug,
     titolo: degustazione.titolo,
     descrizione: degustazione.descrizione,
-    data: degustazione.data ? degustazione.data.toISOString() : null, // Converte in stringa ISO
+    data: degustazione.data ? degustazione.data.toISOString() : null,
     calici: degustazione.calici || null,
     postiDisponibili: degustazione.postiDisponibili,
     dettagli: degustazione.dettagli || '',
@@ -37,7 +35,7 @@ export default function Degustazioni({ initialDegustazioni }) {
         <title>Enoteca Morbin | Admin - Gestione degustazioni</title>
       </Head>
 
-      <div className="styles.container">
+      <div className="scheda">
         <h1 className="styles.title">Gestione Degustazioni</h1>
         <div className="styles.degustazioniList">
           {degustazioni.map((degustazione) => (

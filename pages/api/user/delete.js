@@ -1,5 +1,5 @@
-import { withAuth } from '../../lib/auth/withAuth';
-import { connectToDatabase } from '../../lib/mongodb';
+import { withAuth } from '../../../lib/auth/withAuth';
+import { connectToDatabase } from '../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 async function deleteUserHandler(req, res, session) {

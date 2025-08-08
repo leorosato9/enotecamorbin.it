@@ -1,5 +1,3 @@
-// Questo file è generato automaticamente da scripts/generateLocations.js
-// Non editare a mano.
 
 export const regioni = [
   "Abruzzo",
@@ -7,7 +5,7 @@ export const regioni = [
   "Calabria",
   "Campania",
   "Emilia-Romagna",
-  "Friuli-Venezia Giulia",
+  "Friuli Venezia Giulia",
   "Lazio",
   "Liguria",
   "Lombardia",
@@ -18,7 +16,7 @@ export const regioni = [
   "Sardegna",
   "Sicilia",
   "Toscana",
-  "Trentino-Alto Adige/Südtirol",
+  "Trentino Alto Adige/Südtirol",
   "Umbria",
   "Valle d'Aosta",
   "Veneto"
@@ -60,7 +58,7 @@ export const provinceByRegione = {
     "Reggio Emilia",
     "Rimini"
   ],
-  "Friuli-Venezia Giulia": [
+  "Friuli Venezia Giulia": [
     "Trieste",
     "Gorizia",
     "Pordenone",
@@ -155,7 +153,7 @@ export const provinceByRegione = {
     "Prato",
     "Siena"
   ],
-  "Trentino-Alto Adige/Südtirol": [
+  "Trentino Alto Adige/Südtirol": [
     "Bolzano/Bozen",
     "Trento"
   ],

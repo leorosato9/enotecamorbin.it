@@ -4,6 +4,7 @@ import json
 import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -14,10 +15,9 @@ from selenium.common.exceptions import (
 )
 
 class TannicoSeleniumScraper:
-    def __init__(self, start_url, output_file="tannico_wines.json", driver_path="chromedriver"):
+    def __init__(self, start_url, output_file="tannico_wines.json"):
         self.start_url = start_url
         self.output_file = output_file
-        # Carico i dati esistenti (se il file c'è) oppure lascio lista vuota
         if os.path.isfile(self.output_file):
             try:
                 with open(self.output_file, "r", encoding="utf-8") as f:
@@ -29,15 +29,15 @@ class TannicoSeleniumScraper:
         else:
             self.wines_data = []
 
-        service = ChromeService(executable_path=driver_path)
+        service = ChromeService(executable_path=ChromeDriverManager().install())
         options = webdriver.ChromeOptions()
-        # Se vuoi usare la modalità headless, decommenta la riga seguente:
         # options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
 
         self.driver = webdriver.Chrome(service=service, options=options)
         self.wait = WebDriverWait(self.driver, 10)
+
 
     def load_all_wine_links(self):
         # 1) Apro la pagina che elenca tutti i vini
@@ -100,10 +100,10 @@ class TannicoSeleniumScraper:
 
         # 4) Raccolta link dettagli vino
         links = []
-        elems = self.driver.find_elements(By.XPATH, "//a[contains(@href, '.html')]")
+        elems = self.driver.find_elements(By.CSS_SELECTOR, "a[href^='/products/']")
         for e in elems:
             href = e.get_attribute("href")
-            if href and re.search(r"-\d{4}-.*\.html", href) and href not in links:
+            if href and "/products/" in href and href not in links:
                 links.append(href)
 
         return links
@@ -218,17 +218,12 @@ class TannicoSeleniumScraper:
     def close(self):
         self.driver.quit()
 
-
 if __name__ == "__main__":
-    # Esempio: URL dei vini bianchi; sostituisci con qualunque pagina elenco desideri
     start_url = "https://www.tannico.it/altri/rose.html"
-    driver_path = "/Users/leonardorosato/Desktop/Morbin_Sito/driver/chromedriver"
-
     scraper = TannicoSeleniumScraper(
         start_url,
-        output_file="tannico_wines.json",
-        driver_path=driver_path
+        output_file="vini.json"
     )
     scraper.scrape()
     scraper.close()
-    print("\nScraping completato. Dati salvati in tannico_wines.json.")
+    print("\nScraping completato. Dati salvati in vini.json.")

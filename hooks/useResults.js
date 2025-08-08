@@ -7,6 +7,7 @@ export default function useResults() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const [risultati, setRisultati] = useState([]);
   const [spiegazioni, setSpiegazioni] = useState([]);
   const [ristorante, setRistorante] = useState(null);
@@ -14,10 +15,14 @@ export default function useResults() {
   const [menuEmbedding, setMenuEmbedding] = useState([]);
   const [fileUrl, setFileUrl] = useState(null);
   const [fileType, setFileType] = useState('');
+  
   const [showPreview, setShowPreview] = useState(false);
   const [openStates, setOpenStates] = useState([]);
   const [selectedWines, setSelectedWines] = useState([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  
+  const [regenerationCount, setRegenerationCount] = useState(null); // Inizializziamo a null
+  const [regenerationLimit, setRegenerationLimit] = useState(null); // Inizializziamo a null
 
   useEffect(() => {
     if (!isReady || !id) return;
@@ -25,31 +30,43 @@ export default function useResults() {
     setLoading(true);
     setError('');
 
-    fetch(`/api/results/${Array.isArray(id) ? id.join(',') : id}`)
+    fetch(`/api/carta-vino/${Array.isArray(id) ? id[0] : id}`)
       .then(res => {
-        // Rende la gestione dell'errore più affidabile
         if (!res.ok) return Promise.reject(res);
         return res.json();
       })
       .then(fetchedData => {
-        setRistorante(fetchedData.ristorante || null); 
+        setRistorante({
+          nome: fetchedData.ristorante?.nome,
+          comune: fetchedData.ristorante?.comune,
+          provincia: fetchedData.ristorante?.provincia,
+          attivitaId: fetchedData.attivitaId
+        });
+
+        
         setRisultati(fetchedData.risultati || []);
         setFileUrl(fetchedData.fileUrl || null);
         setFileType(fetchedData.fileType || '');
         setMenuText(fetchedData.menuText || '');
-        // --- QUESTA È LA CORREZIONE FONDAMENTALE ---
         setMenuEmbedding(fetchedData.menuEmbedding || []);
+        
+        setRegenerationLimit(fetchedData.regenerationLimit);
+        setRegenerationCount(fetchedData.regenerationCount);
+        
         try {
-          setSpiegazioni(typeof fetchedData.spiegazioni === 'string' ? JSON.parse(fetchedData.spiegazioni) : fetchedData.spiegazioni || []);
+          const parsedSpiegazioni = typeof fetchedData.spiegazioni === 'string' 
+              ? JSON.parse(fetchedData.spiegazioni) 
+              : fetchedData.spiegazioni || [];
+          setSpiegazioni(parsedSpiegazioni);
         } catch {
+          console.error("Errore nel parsing delle spiegazioni JSON");
           setSpiegazioni([]);
         }
       })
       .catch(async (err) => {
-        // Gestisce sia errori di rete sia risposte non-ok
         try {
             const errorData = await err.json();
-            setError(errorData.message || `Errore (${err.status})`);
+            setError(errorData.message || `Errore nel recupero dei dati (${err.status})`);
         } catch {
             setError('Errore di rete o risposta non valida.');
         }
@@ -70,10 +87,7 @@ export default function useResults() {
   };
 
   const handleViewMenu = () => {
-    if (!fileUrl) {
-      console.warn("Tentativo di visualizzare il menù, ma fileUrl non è disponibile.");
-      return;
-    }
+    if (!fileUrl) return;
     setShowPreview(true);
   };
 
@@ -82,7 +96,7 @@ export default function useResults() {
     const lower = categoria.toLowerCase();
     if (lower.includes('rosso')) return '#d32f2f';
     if (lower.includes('bianco')) return '#fdd835';
-    if (lower.includes('rosè')) return '#f48fb1';
+    if (lower.includes('rosé')) return '#f48fb1';
     if (lower.includes('champagne') || lower.includes('spumante')) return '#81d4fa';
     return '#ccc';
   };
@@ -93,6 +107,7 @@ export default function useResults() {
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
+    setError('');
     
     try {
       const response = await fetch('/api/rigenera-carta', {
@@ -119,6 +134,7 @@ export default function useResults() {
       if (newData.success) {
         setRisultati(newData.risultati);
         setSpiegazioni(newData.spiegazioni);
+        setRegenerationCount(prev => (typeof prev === 'number' ? prev + 1 : 1));
       } else {
         throw new Error(newData.message || 'Errore durante la rigenerazione.');
       }
@@ -135,6 +151,7 @@ export default function useResults() {
   return {
     id, loading, error, risultati, spiegazioni, ristorante, fileUrl, fileType,
     showPreview, openStates, toggleCard, handleViewMenu, setShowPreview,
-    getDotColor, selectedWines, handleWinesSelection, isRegenerating, handleRegenerate
+    getDotColor, selectedWines, handleWinesSelection, isRegenerating, handleRegenerate,
+    regenerationCount, regenerationLimit
   };
 }
