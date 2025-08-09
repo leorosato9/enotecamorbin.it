@@ -93,10 +93,31 @@ export async function getServerSideProps(context) {
 
   const { db } = await connectToDatabase()
   const email = session.user.email.toLowerCase()
+
+  // ✅ Projection solo-inclusione (niente mix include/esclude)
   const user = await db.collection('utenti').findOne(
     { email },
-    { projection: { passwordHash: 0 } }
+    {
+      projection: {
+        nome: 1,
+        cognome: 1,
+        email: 1,
+        telefono: 1,
+        plan: 1,
+        profileImageUrl: 1,
+        createdAt: 1,
+        billingProfile: 1, // <— importante
+      },
+    }
   )
+  const bp = user?.billingProfile
+    ? {
+        ...user.billingProfile,
+        updatedAt: user.billingProfile.updatedAt
+          ? new Date(user.billingProfile.updatedAt).toISOString()
+          : null,
+      }
+    : null;
 
   const userData = user
     ? {
@@ -104,17 +125,22 @@ export async function getServerSideProps(context) {
         cognome: user.cognome || '',
         email: user.email || '',
         telefono: user.telefono || '',
+        plan: user.plan || '',
         profileImageUrl: user.profileImageUrl || '',
-        createdAt: user.createdAt?.toISOString() || '',
+        createdAt: user.createdAt ? user.createdAt.toISOString() : '',
+        billingProfile: bp, // 👈 ora serializzabile
       }
     : {
         nome: '',
         cognome: '',
         email: session.user.email,
         telefono: '',
+        plan: '',
         profileImageUrl: '',
         createdAt: '',
-      }
+        billingProfile: null,
+      };
+
 
   const attArray = await db
     .collection('attività')
@@ -129,7 +155,7 @@ export async function getServerSideProps(context) {
     regione: att.regione,
     provincia: att.provincia,
     comune: att.comune,
-    createdAt: att.createdAt?.toISOString() || '',
+    createdAt: att.createdAt ? att.createdAt.toISOString() : '',
     collaboratori: att.collaboratori || [],
   }))
 
@@ -143,7 +169,7 @@ export async function getServerSideProps(context) {
       .find({ email: { $in: uniqueCollaboratori } })
       .toArray()
     usersArray.forEach(u => {
-      emailToName[u.email] = `${u.nome} ${u.cognome}`
+      emailToName[u.email] = `${u.nome || ''} ${u.cognome || ''}`.trim()
     })
   }
 
