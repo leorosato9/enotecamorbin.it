@@ -62,7 +62,8 @@ export default function CheckoutForm() {
             email,
             name: companyName,
             address: { line1: addressLine1, city, postal_code: postalCode, state, country },
-            tax_id: taxId
+            tax_id: taxId,
+            codice_univoco: e.target.codice_univoco.value // 👈 aggiunto qui
           }
         })
       });
@@ -106,6 +107,10 @@ export default function CheckoutForm() {
       <div>
         <label htmlFor="tax_id">Partita IVA</label>
         <input id="tax_id" name="tax_id" type="text" required />
+      </div>
+      <div>
+        <label htmlFor="codice_univoco">Codice Univoco</label>
+        <input id="codice_univoco" name="codice_univoco" type="text" required />
       </div>
       <div>
         <label htmlFor="email">Email di fatturazione</label>
